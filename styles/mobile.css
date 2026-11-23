@@ -1,0 +1,1370 @@
+/*
+ * mobile.css
+ * Copyright (C) 2026 Stefano Natangelo
+ * SPDX-License-Identifier: AGPL-3.0-only
+ *
+ * Mobile Dashboard (mobileDashboard) – the OJS 3.5 back end on phones.
+ * Above 900px nothing changes: the menu button stays hidden.
+ */
+
+#mdNavToggle,
+#mdNavBackdrop,
+.mdStagesToggle {
+    display: none;
+}
+
+@media (max-width: 900px) {
+
+    /* ---------- Header ---------- */
+
+    .app__header {
+        min-width: 0;
+        max-width: 100vw;
+    }
+
+    #mdNavToggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: 3rem;
+        height: 3rem;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    #mdNavToggle:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: -4px;
+    }
+
+    #mdNavToggle svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* The journal name gets shorter instead of pushing the bell and avatar out */
+    .app__contextTitle {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .app__header > .ms-auto {
+        flex: none;
+    }
+
+    /* ---------- Slide-out menu ---------- */
+
+    #app-nav {
+        position: fixed !important;
+        top: 3rem !important;
+        bottom: 0;
+        left: 0;
+        z-index: 60;
+        height: auto !important;
+        max-width: 88vw;
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform .2s ease, visibility 0s linear .2s;
+        box-shadow: 0 0 16px rgba(0, 0, 0, .25);
+    }
+
+    [dir="rtl"] #app-nav {
+        left: auto;
+        right: 0;
+        transform: translateX(105%);
+    }
+
+    body.md-nav-open #app-nav {
+        transform: none;
+        visibility: visible;
+        transition: transform .2s ease;
+    }
+
+    /* The menu content scrolls inside it down to the last item */
+    #app-nav > div {
+        width: 21rem;
+        max-width: 88vw;
+        height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    body.md-nav-open #mdNavBackdrop {
+        display: block;
+        position: fixed;
+        top: 3rem;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 55;
+        background: rgba(0, 0, 0, .35);
+    }
+
+    body.md-nav-open {
+        overflow: hidden;
+    }
+
+    /* ---------- Content inside the screen ---------- */
+
+    /* No horizontal scrolling of the whole page: without this the phone
+       shrinks everything and fixed panels end up out of place */
+    .app {
+        position: relative; /* screen-reader-only texts stay inside too */
+        overflow-x: clip;
+    }
+
+    .app__body {
+        display: block !important;
+    }
+
+    /* Filter and search bars wrap */
+    .app__main .flex.flex-row.items-center {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .app__main {
+        width: 100%;
+        min-width: 0;
+        max-width: 100vw;
+    }
+
+    .app__page {
+        min-width: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .app__page > div.ms-5 {
+        margin-left: .25rem;
+        margin-right: .25rem;
+    }
+
+    /* Wide tables scroll sideways inside themselves, not the whole page */
+    .app__main table,
+    .DialogContent table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* ---------- Tabs (Settings, Website, Profile…) ----------
+       One row that scrolls sideways, kept under the header while the page
+       scrolls (tabs inside a tab stay under the outer row). They look like
+       tabs: the active one is white and open at the bottom, joined to its
+       panel. Side tabs (e.g. Appearance) become a row on top like the
+       others. mobile.js brings the active tab into view and changes tab
+       with a sideways swipe on the panel. */
+    .pkpTabs--side {
+        display: block !important;
+    }
+
+    .pkpTabs--side > .pkpTabs__content {
+        margin: 0 !important;
+        width: auto !important;
+    }
+
+    /* Tabs inside a tab span the whole outer panel */
+    .pkpTab .pkpTabs {
+        margin: 0 -.75rem !important;
+    }
+
+    .pkpTab .pkpTab .pkpTabs {
+        margin: 0 -.5rem !important;
+    }
+
+    .pkpTab {
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .pkpTabs__buttons,
+    .ui-tabs-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        float: none !important;
+        width: auto !important;
+        max-width: none !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        border: none !important;
+        /* the line that the active tab interrupts */
+        box-shadow: inset 0 -1px 0 #ddd;
+    }
+
+    .pkpTabs__buttons::-webkit-scrollbar,
+    .ui-tabs-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pkpTabs__buttons {
+        margin: 0 !important;
+        padding-top: .25rem !important;
+        padding-bottom: 0 !important;
+        background: #eaedee;
+    }
+
+    .pkpTab .pkpTabs > .pkpTabs__buttons {
+        padding-left: .5rem !important;
+        padding-right: .5rem !important;
+    }
+
+    .pkpTab .pkpTabs > .pkpTabs__buttons,
+    .DialogContent .pkpTabs__buttons,
+    .modal--popup .pkpTabs__buttons {
+        background: #fff;
+    }
+
+    .pkpTabs__button {
+        flex: none;
+        width: auto !important;
+        height: 2.5rem;
+        margin: 0 !important;
+        padding: 0 .875rem !important;
+        line-height: calc(2.5rem - 1px) !important;
+        white-space: nowrap;
+        border: 1px solid transparent !important;
+        border-bottom: none !important;
+        border-radius: 2px 2px 0 0 !important;
+        background: transparent !important;
+        top: auto !important;
+        right: auto !important;
+        left: auto !important;
+    }
+
+    .pkpTabs__button[aria-selected="true"] {
+        border-color: #ddd !important;
+        background: #fff !important;
+    }
+
+    /* Between 767 and 900px OJS draws side tabs as a column: the coloured
+       line goes back on top and the focus dot at the bottom */
+    .pkpTabs--side .pkpTabs__button::before {
+        top: -1px !important;
+        right: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 25% !important;
+        height: 2px !important;
+    }
+
+    .pkpTabs--side .pkpTabs__button:hover::before,
+    .pkpTabs--side .pkpTabs__button:focus::before,
+    .pkpTabs--side .pkpTabs__button[aria-selected="true"]::before {
+        width: 100% !important;
+    }
+
+    .pkpTabs--side .pkpTabs__button:focus::after {
+        top: auto !important;
+        right: auto !important;
+        bottom: .375rem !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+    /* A touch screen keeps :hover on the tab tapped last, so its coloured
+       line stayed after a swipe to another tab: here only the open tab
+       has the line. The focus marks (line, dot under the name) are for
+       the keyboard only (md-keyboard, set by mobile.js on Tab and the
+       arrow keys): OJS focuses the tab after a tap or a swipe too. */
+    .pkpTabs__button:not([aria-selected="true"])::before,
+    .ui-tabs-nav > li:not(.ui-state-active) > a::before {
+        background: transparent !important;
+    }
+
+    html:not(.md-keyboard) .pkpTabs__button:focus::after {
+        content: none !important;
+    }
+
+    html.md-keyboard .pkpTabs__button:focus::before,
+    html.md-keyboard .ui-tabs-nav > li:focus > a::before,
+    html.md-keyboard .ui-tabs-nav > li > a:focus::before {
+        background: #008acb !important;
+        width: 100% !important;
+    }
+
+    /* Older tabs (Profile, import/export…) */
+    .ui-tabs-nav > li {
+        flex: none;
+        float: none !important;
+        top: 0 !important;
+        white-space: nowrap;
+    }
+
+    .ui-tabs-nav > li > a {
+        top: 0 !important;
+        padding: 0 .875rem !important;
+        line-height: 2.5rem !important;
+    }
+
+    .app__main .ui-tabs > .ui-tabs-nav {
+        padding: .25rem 0 0;
+    }
+
+    /* Rows kept under the header (3rem) and under the outer row (2.75rem) */
+    .app__main .pkpTabs > .pkpTabs__buttons,
+    .app__main .ui-tabs > .ui-tabs-nav {
+        position: sticky !important;
+        top: 3rem !important;
+        z-index: 9 !important;
+    }
+
+    .app__main .pkpTab .pkpTabs > .pkpTabs__buttons {
+        top: 5.75rem !important;
+        z-index: 8 !important;
+    }
+
+    .app__main .pkpTab .pkpTab .pkpTabs > .pkpTabs__buttons {
+        top: 8.5rem !important;
+        z-index: 7 !important;
+    }
+
+    .app__main .ui-tabs-panel .ui-tabs > .ui-tabs-nav,
+    .app__main .pkpTab .ui-tabs > .ui-tabs-nav {
+        position: relative !important;
+        top: 0 !important;
+        z-index: auto !important;
+        padding: 0 .5rem;
+    }
+
+    /* Sideways swipes on a panel are left to mobile.js; up and down and
+       zoom work as usual. Boxes that scroll by themselves (SCROLLERS in
+       mobile.js) need the rule too, or the browser takes the sideways
+       movement for them; those really wider than the screen (md-scroll-x)
+       keep scrolling sideways. While the page is zoomed in (md-zoomed) the
+       finger moves the page in every direction. */
+    .app__main .pkpTab,
+    .app__main .ui-tabs-panel,
+    .app__main .pkpTab table:not(.md-scroll-x),
+    .app__main .ui-tabs-panel table:not(.md-scroll-x),
+    .app__main .pkpTab .pkp_controllers_grid:not(.md-scroll-x),
+    .app__main .ui-tabs-panel .pkp_controllers_grid:not(.md-scroll-x),
+    .app__main .pkpTab .scrollable:not(.md-scroll-x),
+    .app__main .ui-tabs-panel .scrollable:not(.md-scroll-x),
+    .app__main .pkpTab .overflow-auto:not(.md-scroll-x),
+    .app__main .ui-tabs-panel .overflow-auto:not(.md-scroll-x),
+    body:has(.app__main .pkpTab, .app__main .ui-tabs-panel),
+    body:has(.app__main .pkpTab, .app__main .ui-tabs-panel) .app,
+    .app__main:has(.pkpTab, .ui-tabs-panel) {
+        touch-action: pan-y pinch-zoom;
+    }
+
+    .md-zoomed body,
+    .md-zoomed .app,
+    .md-zoomed .app__main,
+    .md-zoomed .app__main .pkpTab,
+    .md-zoomed .app__main .ui-tabs-panel,
+    .md-zoomed .app__main .pkpTab table,
+    .md-zoomed .app__main .ui-tabs-panel table,
+    .md-zoomed .app__main .pkpTab .pkp_controllers_grid,
+    .md-zoomed .app__main .ui-tabs-panel .pkp_controllers_grid,
+    .md-zoomed .app__main .pkpTab .scrollable,
+    .md-zoomed .app__main .ui-tabs-panel .scrollable,
+    .md-zoomed .app__main .pkpTab .overflow-auto,
+    .md-zoomed .app__main .ui-tabs-panel .overflow-auto {
+        touch-action: auto;
+    }
+
+    /* Forms: label above the fields instead of beside them */
+    .pkpFormGroup {
+        display: block;
+        width: auto !important;
+        max-width: 100%;
+    }
+
+    /* Less nested spacing (page, tab, sub-tab, form group, box): on phones
+       the content uses the full width */
+    .app__main {
+        padding-left: .5rem !important;
+        padding-right: .5rem !important;
+    }
+
+    .pkpTab,
+    .ui-tabs-panel {
+        padding: .75rem !important;
+    }
+
+    .pkpTab .pkpTab {
+        padding: .75rem .5rem !important;
+    }
+
+    .pkpFormGroup {
+        box-sizing: border-box;
+        padding: 1rem 0 !important;
+    }
+
+    .pkpFormField--options {
+        padding: .5rem .75rem .75rem !important;
+    }
+
+    .pkpFormGroup__heading,
+    .pkpFormGroup__fields {
+        float: none !important;
+        width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .pkpFormField__input,
+    .pkpFormField--select__input,
+    .pkpFormField--text__input {
+        max-width: 100%;
+    }
+
+    .pkpFormPage__footer,
+    .pkpFormPage__buttons {
+        flex-wrap: wrap;
+    }
+
+    /* Rich-text editor */
+    .tox.tox-tinymce {
+        max-width: 100%;
+    }
+
+    .tox .tox-toolbar__primary,
+    .tox .tox-toolbar,
+    .tox .tox-toolbar__group,
+    .tox .tox-toolbar.tox-toolbar--scrolling {
+        flex-wrap: wrap !important;
+        max-width: 100%;
+    }
+
+    /* Old forms: fields at 1/4, 1/3, 1/2 or 3/4 of the width, sometimes
+       side by side (e.g. reviewer reminder dates, the names and contact
+       details in Profile), are too narrow on phones. One per line, as wide
+       as the form. */
+    .pkp_form .pkp_helpers_quarter,
+    .pkp_form .pkp_helpers_third,
+    .pkp_form .pkp_helpers_half,
+    .pkp_form .pkp_helpers_threeQuarter {
+        width: 100% !important;
+        float: none !important;
+        margin-right: 0 !important;
+    }
+
+    .pkp_form .inline:is(.pkp_helpers_quarter, .pkp_helpers_third, .pkp_helpers_half, .pkp_helpers_threeQuarter) {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .pkp_form :is(.pkp_helpers_quarter, .pkp_helpers_third, .pkp_helpers_half, .pkp_helpers_threeQuarter).inline + .inline {
+        margin-top: .75rem;
+    }
+
+    /* Profile: "What is ORCID?" in one piece, beside the button or below it */
+    .orcid_container #connect-orcid-button + a {
+        white-space: nowrap;
+    }
+
+    /* Pop-up notices */
+    .app__notifications {
+        max-width: calc(100vw - 1rem);
+        left: .5rem;
+        right: .5rem;
+    }
+
+    /* Side panels (workflow, activity): full width */
+    .DialogContent {
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+
+    .DialogContent > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Panel title: smaller margins, buttons below the title */
+    .DialogContent .ml-8.mr-8 {
+        margin-left: .75rem !important;
+        margin-right: .75rem !important;
+        min-width: 0;
+    }
+
+    .DialogContent .ml-8.mr-8 > .flex {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    /* Workflow: stage menu above the content instead of beside it */
+    .DialogContent .pkp-modal-scroll-container > .min-w-fit {
+        min-width: 0 !important;
+        padding: .5rem !important;
+    }
+
+    .DialogContent .pkp-modal-scroll-container > .min-w-fit > .flex.w-full {
+        flex-direction: column;
+    }
+
+    .DialogContent .pkp-modal-scroll-container > .min-w-fit > .flex.w-full > * {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .DialogContent .pkp-modal-scroll-container nav,
+    .DialogContent .pkp-modal-scroll-container nav > * {
+        width: 100% !important;
+    }
+
+    /* Collapsible stage menu: "☰ current stage ▾" bar (created by mobile.js) */
+    .mdStagesToggle {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        width: 100%;
+        margin: 0;
+        padding: .7rem .75rem;
+        border: 1px solid #bbb;
+        background: #fff;
+        color: #006798;
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: start;
+        cursor: pointer;
+    }
+
+    .mdStagesToggle:focus-visible {
+        outline: 2px solid #006798;
+        outline-offset: -3px;
+    }
+
+    .mdStagesToggle svg {
+        flex: none;
+        width: 1.4rem;
+        height: 1.4rem;
+    }
+
+    .mdStagesToggle__label {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .mdStagesToggle[aria-expanded="true"] svg:last-child {
+        transform: rotate(180deg);
+    }
+
+    .md-stages-closed > nav {
+        display: none !important;
+    }
+
+    /* Decisions side column below the stage content */
+    .DialogContent .flex:has(> .w-96) {
+        flex-direction: column;
+    }
+
+    .DialogContent .flex:has(> .w-96) > * {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-inline: none;
+    }
+
+    /* The whole panel scrolls together, so the title does not take half the screen */
+    .DialogContent .shadow-xl.flex.h-full.flex-col {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .DialogContent .pkp-modal-scroll-container {
+        flex: none !important;
+        overflow: visible !important;
+    }
+
+    /* Grid headers: the button goes below the title */
+    .pkp_controllers_grid .header,
+    .DialogContent .flex.items-center.justify-between {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    /* In side tabs (Workflow > Submission > Components…) OJS keeps the
+       grid header one line high: the buttons that go on a second line
+       came out of it and squeezed the first row into a narrow strip */
+    .pkp_controllers_grid > .header {
+        max-height: none !important;
+    }
+
+    /* Lists with search and filters (Add Reviewer, users, announcements…):
+       header and buttons wrap instead of overflowing the screen */
+    .pkpHeader,
+    .pkpHeader__actions {
+        flex-wrap: wrap;
+        max-width: 100%;
+        gap: .5rem;
+    }
+
+    .pkpHeader.-isOneLine {
+        flex-wrap: wrap;
+    }
+
+    .pkpSearch {
+        flex: 1 1 12rem;
+        min-width: 0;
+    }
+
+    .listPanel__itemSummary {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .listPanel__itemIdentity {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .listPanel__itemActions {
+        flex-wrap: wrap;
+        margin-left: 0;
+    }
+
+    /* Headers of the new tables (e.g. "Current Users" with search):
+       title and search wrap and the search stays inside the box */
+    .app__main .flex.justify-between,
+    .DialogContent .flex.justify-between {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .app__main .flex.justify-between > .flex-shrink-0,
+    .DialogContent .flex.justify-between > .flex-shrink-0 {
+        flex-shrink: 1;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    /* Step bar: if it does not collapse, at least it can be swiped */
+    .pkpSteps__buttonWrapper {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* Step bars that OJS does not collapse (Invite to a role): only the
+       number for the other steps, the name only for the current one */
+    .pkpSteps__step:not(:has(.pkpSteps__step__label--current)) .pkpSteps__step__label {
+        font-size: 0;
+    }
+
+    .pkpSteps__step:not(:has(.pkpSteps__step__label--current)) .pkpSteps__step__number {
+        font-size: .875rem;
+    }
+
+    /* Users & Roles: a role without a start date keeps an empty line in the
+       dates, so each date stays beside its role */
+    .app__main td > div.flex.flex-col:empty {
+        min-height: 1rem;
+    }
+
+    /* Navigation menus (Edit, Add Menu): Assigned and Unassigned items one
+       below the other at full width; mobile.js turns each heading into a
+       button that opens and closes its list */
+    .pkp_nav_management .pkp_nav_assigned,
+    .pkp_nav_management .pkp_nav_unassigned {
+        float: none !important;
+        width: auto !important;
+        margin: 0 0 1rem !important;
+    }
+
+    /* the line OJS draws between the two columns */
+    .pkp_nav_management .pkp_nav_assigned::before {
+        display: none !important;
+    }
+
+    .pkp_nav_management .md-nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        cursor: pointer;
+    }
+
+    .pkp_nav_management .md-nav-toggle > svg {
+        flex: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        transition: transform .2s;
+    }
+
+    .pkp_nav_management .md-nav-closed > .md-nav-toggle > svg {
+        transform: rotate(-90deg);
+    }
+
+    .pkp_nav_management .md-nav-closed > ul {
+        display: none;
+    }
+
+    /* Button rows (at the bottom of the submission form etc.): they wrap;
+       "Last saved…" on its own line above the buttons */
+    .buttonRow {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .submissionWizard__lastSaved {
+        flex: 1 1 100%;
+        text-align: right;
+    }
+
+    /* Workflow tables (files, reviewers, galleys, discussions): on phones
+       each row becomes a card. On top the full name (wrapping), below it
+       the other data with their labels (data-md-label, set by mobile.js).
+       The header stays for screen readers. */
+    .DialogContent table.border-separate,
+    .app__main table.border-separate,
+    .DialogContent .pkp_controllers_grid table,
+    .app__main .pkp_controllers_grid table {
+        display: block;
+        overflow: visible;
+        border-top: 1px solid #bbb;
+    }
+
+    .DialogContent table.border-separate thead,
+    .app__main table.border-separate thead,
+    .DialogContent .pkp_controllers_grid table thead,
+    .app__main .pkp_controllers_grid table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .DialogContent table.border-separate tbody,
+    .app__main table.border-separate tbody,
+    .DialogContent .pkp_controllers_grid table tbody,
+    .app__main .pkp_controllers_grid table tbody {
+        display: block;
+    }
+
+    .DialogContent table.border-separate tbody tr,
+    .app__main table.border-separate tbody tr,
+    .DialogContent .pkp_controllers_grid table tr.gridRow,
+    .app__main .pkp_controllers_grid table tr.gridRow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .25rem 1rem;
+        padding: .6rem .75rem;
+        border: 1px solid #bbb;
+        border-top: none;
+        height: auto !important;
+        min-height: 0;
+    }
+
+    .DialogContent table.border-separate tbody tr > *,
+    .app__main table.border-separate tbody tr > *,
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td,
+    .app__main .pkp_controllers_grid table tr.gridRow > td {
+        display: block;
+        width: auto !important;
+        max-width: 100% !important;
+        min-width: 0;
+        padding: 0 !important;
+        border: none !important;
+        white-space: normal !important;
+        text-align: start !important;
+    }
+
+    /* The name cell (file, reviewer, discussion) on top, across the whole row */
+    .DialogContent table.border-separate tbody tr > th[scope="row"],
+    .app__main table.border-separate tbody tr > th[scope="row"],
+    .DialogContent table.border-separate tbody tr > td[colspan],
+    .app__main table.border-separate tbody tr > td[colspan],
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column,
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column {
+        order: -1;
+        flex: 1 1 100%;
+    }
+
+    .DialogContent table.border-separate tbody tr > th[scope="row"] .truncate,
+    .app__main table.border-separate tbody tr > th[scope="row"] .truncate,
+    .DialogContent table.border-separate tbody tr > th[scope="row"].truncate ,
+    .app__main table.border-separate tbody tr > th[scope="row"].truncate {
+        overflow: visible;
+        white-space: normal;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        margin-inline-start: 0;
+    }
+
+    /* Room for the small arrow that opens Edit/Delete */
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column,
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column {
+        position: relative;
+        padding-inline-start: 2rem !important;
+        overflow-wrap: anywhere;
+    }
+
+    .DialogContent table.border-separate [data-md-label]::before,
+    .app__main table.border-separate [data-md-label]::before,
+    .DialogContent .pkp_controllers_grid [data-md-label]::before,
+    .app__main .pkp_controllers_grid [data-md-label]::before {
+        content: attr(data-md-label) ": ";
+        font-size: .8em;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    /* Dashboard lists: of the headers only the sort buttons (ID, Days…)
+       remain, in a row above the cards */
+    .app__main table.border-separate thead {
+        position: static;
+        display: block;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip: auto;
+    }
+
+    .app__main table.border-separate thead tr {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem 1.5rem;
+        padding: .5rem .75rem;
+        border: 1px solid #bbb;
+        border-top: none;
+    }
+
+    .app__main table.border-separate thead th {
+        display: none;
+    }
+
+    .app__main table.border-separate thead th:has(button) {
+        display: block;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    /* Bar above the list: search on its own line, as wide as the screen */
+    .app__main .flex.justify-between > .flex-row:has(.pkpSearch) {
+        flex: 1 1 100%;
+    }
+
+    .app__main .flex.justify-between > .flex-row:has(.pkpSearch) .pkpSearch,
+    .app__main .flex.justify-between > .flex-row:has(.pkpSearch) .pkpSearch__input {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Rows with a checkbox (e.g. plugin list): name and checkbox on the
+       same line at the top, the description below at full width */
+    .DialogContent .pkp_controllers_grid table tr.gridRow:has(> td input[type="checkbox"]) > td.first_column,
+    .app__main .pkp_controllers_grid table tr.gridRow:has(> td input[type="checkbox"]) > td.first_column {
+        order: -2;
+        flex: 1 1 0;
+        font-weight: 600;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td:not(.first_column):has(input[type="checkbox"]),
+    .app__main .pkp_controllers_grid table tr.gridRow > td:not(.first_column):has(input[type="checkbox"]) {
+        order: -1;
+        flex: none;
+        white-space: nowrap !important;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.gridRow:has(> td input[type="checkbox"]) > td:not(.first_column):not(:has(input[type="checkbox"])),
+    .app__main .pkp_controllers_grid table tr.gridRow:has(> td input[type="checkbox"]) > td:not(.first_column):not(:has(input[type="checkbox"])) {
+        flex: 1 1 100%;
+        color: #444;
+    }
+
+    /* Tables with the name in the first column and the ⋯ menu at the end
+       (e.g. Users & Roles; mobile.js adds the md-named class): name and
+       menu on top, then one item per line; list data (roles and dates)
+       stay side by side */
+    .app__main table.md-named tbody tr > :first-child,
+    .app__main table.md-named tbody tr > :first-child > span {
+        order: -2;
+        flex: 1 1 0;
+        font-weight: 600;
+    }
+
+    .app__main table.md-named tbody tr > :last-child:has(button[aria-haspopup]) {
+        order: -1;
+        flex: none;
+    }
+
+    .app__main table.md-named tbody tr > [data-md-label]:not(:has(> .flex-col)) {
+        flex: 1 1 100%;
+    }
+
+    /* Category title rows (e.g. "Generic Plugins (40)") and "no items"
+       rows: full width */
+    .DialogContent .pkp_controllers_grid table tr.category,
+    .app__main .pkp_controllers_grid table tr.category,
+    .DialogContent .pkp_controllers_grid table tr.empty,
+    .app__main .pkp_controllers_grid table tr.empty {
+        display: block;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.category > td,
+    .app__main .pkp_controllers_grid table tr.category > td,
+    .DialogContent .pkp_controllers_grid table tr.empty > td,
+    .app__main .pkp_controllers_grid table tr.empty > td {
+        display: block;
+        width: auto !important;
+    }
+
+    /* Edit/Delete row: OJS opens it with display:table-row */
+    .DialogContent .pkp_controllers_grid table tr.row_controls[style*="table-row"],
+    .app__main .pkp_controllers_grid table tr.row_controls[style*="table-row"] {
+        display: block !important;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.row_controls > td,
+    .app__main .pkp_controllers_grid table tr.row_controls > td {
+        display: block;
+        padding: .5rem .75rem;
+        border: 1px solid #bbb;
+        border-top: none;
+    }
+
+    /* Dialogs of the old forms (grids, files, discussions) */
+    .pkp_modal_panel {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: auto !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+    }
+
+    .pkp_modal_panel > .content {
+        padding: 1rem .75rem;
+    }
+
+    .pkp_controllers_grid {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* ---------- Fewer boxes inside boxes ---------- */
+
+    /* A heading that repeats the page or panel title (marked by mobile.js);
+       a header holding only that heading disappears entirely */
+    .app__main .md-dup-title,
+    .DialogContent .md-dup-title,
+    .app__main .md-dup-head,
+    .DialogContent .md-dup-head {
+        display: none !important;
+    }
+
+    .app__main .listPanel__header:has(.md-dup-title) .pkpHeader__actions {
+        margin-inline-start: 0;
+    }
+
+    /* Simple side panels (Tasks…): no white box inside a grey box */
+    .DialogContent .pkp-modal-scroll-container > .p-4 {
+        padding: .5rem 0 !important;
+    }
+
+    .DialogContent .pkp-modal-scroll-container > .p-4 > .bg-secondary.p-4 {
+        padding: 0 !important;
+    }
+
+    /* Side panels with a form, new (Edit journal, Filters, Metadata…) or
+       old-style (Create Section, Add Category, Navigation > Edit…): the
+       labels and fields keep a margin from the edge of the screen */
+    .DialogContent .pkp-modal-scroll-container > .p-4 > .bg-secondary.p-4:has(.pkpForm, .pkp_form) {
+        padding: 0 1rem !important;
+    }
+
+    /* Rows that start with a checkbox only (e.g. Tasks): the checkbox on
+       the left of the text, on the same line */
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column:has(> input[type="checkbox"]:only-child),
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column:has(> input[type="checkbox"]:only-child) {
+        order: 0;
+        flex: none;
+        align-self: flex-start;
+        padding: .15rem 0 0 !important;
+        font-weight: normal;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column:has(> input[type="checkbox"]:only-child) + td,
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column:has(> input[type="checkbox"]:only-child) + td {
+        flex: 1 1 0 !important;
+        overflow-wrap: anywhere;
+        /* OJS shifts the text 16px to the right: room for it at the end */
+        margin-inline-end: 1rem !important;
+    }
+
+    .pkp_controllers_grid tr.gridRow:has(> td.first_column > input[type="checkbox"]:only-child) {
+        flex-wrap: nowrap;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+
+    /* Boxes with a list inside another box (Counter R5, Institutions,
+       Announcements…): the list fills the outer box */
+    .app__main .panelSection:has(.listPanel) {
+        padding: 0 !important;
+    }
+
+    .app__main .pkpTab:has(> .listPanel),
+    .app__main .pkpTab:has(> div > .listPanel:only-child) {
+        padding: 0 !important;
+    }
+
+    .app__main .panelSection .listPanel,
+    .app__main .pkpTab > .listPanel,
+    .app__main .pkpTab > div > .listPanel:only-child {
+        border: none;
+    }
+
+    /* Grids inside a tab (Sections, Categories, Plugins, Static Pages,
+       Publisher Library, Announcement Types, Issues): the grid fills the
+       tab, rows without side borders */
+    .app__main .pkpTab:has(> .pkp_controllers_grid),
+    .app__main .pkpTab:not(:has(.pkpTabs)):has(> div > .pkp_controllers_grid) {
+        padding: 0 !important;
+    }
+
+    .app__main .pkpTab > .pkp_controllers_grid table tr.gridRow,
+    .app__main .pkpTab > div > .pkp_controllers_grid table tr.gridRow {
+        border-left: none;
+        border-right: none;
+    }
+
+    .app__main .pkpTab .pkp_controllers_grid table tbody.empty > tr > td {
+        padding: .5rem .75rem !important;
+    }
+
+    /* Category rows without an arrow (Publisher Library, plugin groups):
+       no empty space before the name */
+    .DialogContent .pkp_controllers_grid table tr.gridRow.category > td.first_column:not(:has(> a.show_extras)),
+    .app__main .pkp_controllers_grid table tr.gridRow.category > td.first_column:not(:has(> a.show_extras)) {
+        padding-inline-start: 0 !important;
+    }
+
+    /* Expandable rows: a narrower arrow, the name closer to the edge */
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column:has(> a.show_extras),
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column:has(> a.show_extras) {
+        padding-inline-start: 1.25rem !important;
+    }
+
+    .DialogContent .pkp_controllers_grid table tr.gridRow > td.first_column > a.show_extras,
+    .app__main .pkp_controllers_grid table tr.gridRow > td.first_column > a.show_extras {
+        left: 0;
+        width: 1.25rem;
+    }
+
+    /* Rows with several checkbox columns (Roles): the name on its own line */
+    .app__main .pkp_controllers_grid table tr.gridRow:has(> td:nth-child(5)):has(> td:last-child input[type="checkbox"]) > td.first_column {
+        flex: 1 1 100%;
+    }
+
+    /* Lists with a filter column (DOIs): filters above the list, side by
+       side, the list at full width */
+    .app__main .listPanel__body:has(> .listPanel__sidebar) {
+        flex-direction: column;
+    }
+
+    .app__main .listPanel__sidebar {
+        flex: none !important;
+        float: none !important;
+        width: auto !important;
+        padding: .5rem !important;
+        border-right: 0 !important;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .app__main .listPanel__sidebar .listPanel__block {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0 .75rem;
+        margin: 0 0 .5rem !important;
+        padding: 0 .5rem !important;
+    }
+
+    .app__main .listPanel__sidebar .listPanel__block > .pkpHeader {
+        flex: 1 1 100%;
+        margin: 0 !important;
+    }
+
+    .app__main .listPanel__sidebar .listPanel__block > .pkpFilter {
+        width: auto;
+    }
+
+    .app__main .listPanel__sidebar .listPanel__block > .pkpFilter--autosuggest {
+        flex: 1 1 100%;
+    }
+
+    .app__main .listPanel__sidebar ~ .listPanel__items {
+        flex: 1 1 auto !important;
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        border-left: none !important;
+    }
+
+    /* Statistics: less padding around tables and charts */
+    .pkpStats__panel {
+        padding: .5rem !important;
+    }
+
+    .pkpStats__panel > .pkpHeader {
+        margin-top: -.5rem !important;
+    }
+
+    .pkpStats__graphHeader {
+        padding: .5rem !important;
+    }
+
+    /* Tables whose header has no sort buttons: no empty grey bar on top
+       (the header stays for screen readers) */
+    .app__main table.border-separate thead:not(:has(button)) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    /* Editorial Activity: the ring on the left, sized to the screen,
+       with the total written below it; the stages listed beside it
+       (dot in the stage colour, name, number) */
+    .pkpStats--editorial__stageWrapper {
+        --md-ring: clamp(5.5rem, 30vw, 9rem);
+        display: grid;
+        grid-template-columns: var(--md-ring) minmax(0, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        column-gap: 1.5rem;
+        row-gap: .35rem;
+        align-items: center;
+        min-height: 0;
+        padding: 1rem;
+    }
+
+    .pkpStats--editorial__stageChartWrapper {
+        grid-column: 1;
+        grid-row: 1 / span 4;
+        align-self: start;
+        float: none !important;
+        width: var(--md-ring) !important;
+        height: var(--md-ring);
+        /* room for the total below */
+        margin: 0 0 4.25rem !important;
+    }
+
+    /* Chart.js leaves an empty margin around the ring: the canvas is
+       drawn larger than its box and shifted back, so the ring fills it */
+    .pkpStats--editorial__stageChartWrapper .chartjs-render-monitor,
+    .pkpStats--editorial__stageChartWrapper canvas {
+        width: calc(var(--md-ring) + 3rem) !important;
+        height: calc(var(--md-ring) + 3rem) !important;
+        max-width: none;
+    }
+
+    .pkpStats--editorial__stageChartWrapper .chartjs-render-monitor {
+        margin: -1.5rem !important;
+        background: transparent !important;
+    }
+
+    .pkpStats--editorial__stageList {
+        display: contents;
+    }
+
+    .pkpStats--editorial__stage {
+        grid-column: 2;
+        display: flex !important;
+        align-items: baseline;
+        gap: .5rem;
+        margin: 0 !important;
+        min-width: 0;
+    }
+
+    .pkpStats--editorial__stage::before {
+        content: "";
+        flex: none;
+        align-self: center;
+        width: .65rem;
+        height: .65rem;
+        border-radius: 50%;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, .6);
+        background: #888;
+    }
+
+    /* Same colours as the ring (OJS workflow stage colours), one row each */
+    .pkpStats--editorial__stage:nth-child(2) { grid-row: 1; }
+    .pkpStats--editorial__stage:nth-child(3) { grid-row: 2; }
+    .pkpStats--editorial__stage:nth-child(4) { grid-row: 3; }
+    .pkpStats--editorial__stage:nth-child(5) { grid-row: 4; }
+    .pkpStats--editorial__stage:nth-child(2)::before { background: #d00a0a; }
+    .pkpStats--editorial__stage:nth-child(3)::before { background: #e08914; }
+    .pkpStats--editorial__stage:nth-child(4)::before { background: #006798; }
+    .pkpStats--editorial__stage:nth-child(5)::before { background: #00b28d; }
+
+    /* The clearfix of OJS would take a cell of the grid */
+    .pkpStats--editorial__stageWrapper::before,
+    .pkpStats--editorial__stageWrapper::after {
+        content: none !important;
+    }
+
+    .pkpStats--editorial__stage .pkpStats--editorial__stageLabel {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .pkpStats--editorial__stage .pkpStats--editorial__stageCount {
+        order: 2;
+        font-size: 1.25rem;
+    }
+
+    /* The total below the ring */
+    .pkpStats--editorial__stage.pkpStats--editorial__stage--total {
+        grid-column: 1;
+        grid-row: 1 / span 4;
+        align-self: end;
+        display: block !important;
+        text-align: center;
+    }
+
+    .pkpStats--editorial__stage--total::before {
+        content: none;
+    }
+
+    .pkpStats--editorial__stage--total .pkpStats--editorial__stageCount {
+        font-size: 1.75rem;
+    }
+
+    .pkpStats--editorial__stage--total .pkpStats--editorial__stageLabel {
+        font-size: .8rem;
+        line-height: 1.2;
+    }
+
+    /* Statistics headers (Trends): date range from the left edge,
+       Filters on the right */
+    .pkpStats__panel > .pkpHeader .pkpHeader__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: .5rem;
+        width: 100%;
+        margin-inline-start: 0 !important;
+    }
+
+    .pkpStats__panel > .pkpHeader .pkpHeader__actions > * {
+        margin: 0 !important;
+    }
+
+    /* A single action (Export, Download Report): on the title's line, on
+       the right */
+    .pkpStats__panel > .pkpHeader:has(> .pkpHeader__actions > :only-child) {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .pkpStats__panel > .pkpHeader:has(> .pkpHeader__actions > :only-child) > .pkpHeader__title {
+        flex: 1 1 auto;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .pkpStats__panel > .pkpHeader .pkpHeader__actions:has(> :only-child) {
+        flex: none;
+        width: auto;
+        margin-inline-start: auto !important;
+    }
+
+    /* Statistics tables (Trends and the like): the name across the row,
+       below it each figure with its label on top, side by side */
+    .pkpStats__panel table.border-separate tbody tr > td:first-child:not([data-md-label]) {
+        flex: 1 1 100%;
+        font-weight: 600;
+    }
+
+    .pkpStats__panel table.border-separate tbody tr > td[data-md-label] {
+        flex: 1 1 0;
+    }
+
+    .pkpStats__panel table.border-separate [data-md-label]::before {
+        content: attr(data-md-label);
+        display: block;
+    }
+
+    /* Only one figure (e.g. Registered users): name and number on one line */
+    .pkpStats__panel table.border-separate tbody tr:has(> :nth-child(2):last-child) {
+        flex-wrap: nowrap;
+    }
+
+    .pkpStats__panel table.border-separate tbody tr:has(> :nth-child(2):last-child) > td:first-child {
+        flex: 1 1 auto;
+    }
+
+    .pkpStats__panel table.border-separate tbody tr > td[data-md-label]:nth-child(2):last-child {
+        flex: none;
+        font-weight: 600;
+    }
+
+    .pkpStats__panel table.border-separate tbody tr > td[data-md-label]:nth-child(2):last-child::before {
+        content: none;
+    }
+
+    /* List headers (Announcements, Institutions...): search and buttons
+       aligned with the list below, the search across the whole width */
+    .app__main .listPanel__header {
+        padding: .5rem !important;
+    }
+
+    .app__main .listPanel__header .pkpHeader__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem;
+        margin-inline-start: 0 !important;
+        width: 100%;
+    }
+
+    .app__main .listPanel__header .pkpHeader__actions > * {
+        margin: 0 !important;
+    }
+
+    .app__main .listPanel__header .pkpHeader__actions > .pkpSearch {
+        flex: 1 1 100%;
+    }
+
+    .app__main .listPanel__item {
+        padding-inline: .5rem !important;
+    }
+
+    .app__main .listPanel__itemActions {
+        padding-inline-start: 0 !important;
+    }
+
+    /* A single button (e.g. Edit in Counter R5): beside the name */
+    .app__main .listPanel__itemSummary:has(> .listPanel__itemActions > :only-child) {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .app__main .listPanel__itemSummary:has(> .listPanel__itemActions > :only-child) > .listPanel__itemIdentity {
+        flex: 1 1 auto;
+    }
+
+    .app__main .listPanel__itemSummary > .listPanel__itemActions:has(> :only-child) {
+        flex: none;
+    }
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  version.xml
+  Copyright (C) 2026 Stefano Natangelo
+  SPDX-License-Identifier: AGPL-3.0-only
+-->
+<!DOCTYPE version SYSTEM "../../../lib/pkp/dtd/pluginVersion.dtd">
+<version>
+	<application>mobileDashboard</application>
+	<type>plugins.generic</type>
+	<release>1.0.0.0</release>
+	<date>2026-11-23</date>
+	<lazy-load>1</lazy-load>
+	<sitewide>1</sitewide>
+	<class>MobileDashboardPlugin</class>
+</version>

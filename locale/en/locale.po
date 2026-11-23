@@ -1,0 +1,18 @@
+# Mobile Dashboard (mobileDashboard)
+# Copyright (C) 2026 Stefano Natangelo
+# SPDX-License-Identifier: AGPL-3.0-only
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "plugins.generic.mobileDashboard.displayName"
+msgstr "Mobile Dashboard"
+
+msgid "plugins.generic.mobileDashboard.description"
+msgstr "Makes the editorial dashboard comfortable on phones: slide-in menu, pages that fit the screen, lists and tables shown as cards. On a computer nothing changes."
+
+msgid "plugins.generic.mobileDashboard.menu"
+msgstr "Menu"

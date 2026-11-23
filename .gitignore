@@ -1,0 +1,4 @@
+tests/risultati/
+*.tar.gz
+.DS_Store
+Thumbs.db

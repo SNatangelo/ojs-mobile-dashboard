@@ -1,0 +1,53 @@
+# .github/workflows/checks.yml
+# Copyright (C) 2026 Stefano Natangelo
+# SPDX-License-Identifier: AGPL-3.0-only
+
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks / static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: PHP syntax
+        run: find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: JavaScript syntax
+        run: |
+          for f in styles/*.js tests/*.mjs; do node --check "$f"; done
+      - name: Bash test runner syntax
+        run: for f in tests/*.sh; do bash -n "$f"; done
+      - name: CSS changes nothing above 900 px
+        run: |
+          out=$(node tests/css-check.mjs styles/mobile.css) || { echo "Rules outside @media (max-width: 900px): $out"; exit 1; }
+      - name: Version format and plugin name
+        run: |
+          rel=$(grep -o '<release>[^<]*' version.xml | cut -d'>' -f2)
+          app=$(grep -o '<application>[^<]*' version.xml | cut -d'>' -f2)
+          [[ "$rel" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Bad version: $rel"; exit 1; }
+          [ "$app" = mobileDashboard ] || { echo "Bad application name: $app"; exit 1; }
+      - name: Same locale keys in English and Italian
+        run: diff <(grep '^msgid "' locale/en/locale.po | sort) <(grep '^msgid "' locale/it/locale.po | sort)
+      - name: Copyright and SPDX headers
+        run: |
+          while IFS= read -r -d '' path; do
+            case "$path" in LICENSE|*.png|*.md|.gitignore|.gitattributes|.github/CODEOWNERS) continue;; esac
+            head -n 20 "$path" | grep -Fq 'Copyright (C) 2026 Stefano Natangelo' || { echo "Missing copyright: $path"; exit 1; }
+            head -n 20 "$path" | grep -Fq 'SPDX-License-Identifier: AGPL-3.0-only' || { echo "Missing SPDX: $path"; exit 1; }
+          done < <(git ls-files -z)
