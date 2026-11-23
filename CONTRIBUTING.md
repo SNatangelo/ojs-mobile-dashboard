@@ -29,3 +29,4 @@ Contributions must not include credentials, private records or material you are 
 Run the automated checks described in [tests/README.md](tests/README.md) on a local OJS copy, and say in the pull request which groups you ran. Changes must not alter anything above 900 px.
 
 A commit trailer that credits an AI tool (for example `Co-Authored-By: Claude`) does not make that tool a rights holder, and the CLA check does not ask it to sign. You remain responsible for the whole contribution under Section 3 of the CLA.
+
