@@ -1,60 +1,97 @@
-# Test automatici di Mobile Dashboard
+# Mobile Dashboard automated tests
 
-La suite rifà da sola le prove del plugin, così una modifica futura non rompe in silenzio quello che funzionava.
-Funziona **solo su una copia locale di OJS 3.5 in Docker**, mai su un sito online: se l'indirizzo non è `localhost` si ferma.
+The suite repeats the plugin's checks automatically, so that a future change cannot silently break something that used to work.
+It runs **only against a local OJS 3.5 copy in Docker**, never against a live site: if the address is not `localhost`, it stops.
 
-## Come si lancia
+## How to run it
 
-1. Avviare Docker Desktop e la copia locale (`docker compose up -d` nella sua cartella).
-2. Da Git Bash, nella radice del repository:
+1. Start Docker Desktop and the local copy (`docker compose up -d` in its folder).
+2. From Git Bash, in the repository root:
 
 ```bash
-MD_LOCALE=/percorso/della/copia/docker bash tests/run.sh
+MD_LOCALE=/path/to/the/docker/copy bash tests/run.sh
 ```
 
-Servono Node.js 22 o più recente e Google Chrome, Chromium o Microsoft Edge. Dura circa 14 minuti. Alla fine scrive `RISULTATO: tutti i N test superati` (codice di uscita 0) oppure l'elenco dei test falliti.
+It needs Node.js 22 or later and Google Chrome, Chromium or Microsoft Edge. It takes about 14 minutes. At the end it prints `RESULT: all N tests passed` (exit code 0) or the list of failed tests.
 
-Si può lanciare anche un solo gruppo, o alcuni:
+You can also run a single group, or several:
 
-| Comando | Cosa prova | Durata |
+| Command | What it checks | Duration |
 |---|---|---|
-| `bash tests/run.sh statici` | file e codice, senza browser | circa 1 minuto |
-| `bash tests/run.sh telefono` | pagine del pannello a 390×844 | circa 6 minuti |
-| `bash tests/run.sh computer` | 17 pagine a 1300 px, con e senza plugin | circa 8 minuti |
+| `bash tests/run.sh static` | files and code, no browser | about 1 minute |
+| `bash tests/run.sh phone` | back-end pages at 390×844 (phone) | about 6 minutes |
+| `bash tests/run.sh desktop` | 17 pages at 1300 px, with and without the plugin | about 8 minutes |
 
-Ogni lancio comprende circa un minuto per salvare e preparare la copia locale e poi rimetterla com'era.
+Each run includes about one minute to back up and prepare the local copy and then restore it.
 
-## Cosa fa
+## What it does
 
-1. Controlla che in `config.inc.php` della copia locale la posta sia `default = log`. Se no, si ferma: **nessuna email parte davvero**.
-2. Salva il database della copia locale e la cartella `plugins/generic/mobileDashboard` (se c'è).
-3. Mette **dati finti** al posto di nomi, email, titoli e nomi delle riviste (`placeholders.sql`). Così le immagini in `tests/risultati/` non mostrano dati reali.
-4. Installa il plugin di questo repository (solo i file del pacchetto: `MobileDashboardPlugin.php`, `index.php`, `version.xml`, `styles/`, `locale/`), lo attiva per il sito e spegne gli eventuali plugin indicati in `MD_DISABLE`.
-5. Alla fine **rimette tutto com'era** (database, cartella del plugin, cache), anche se un test fallisce o la suite viene interrotta con Ctrl+C. Se nel frattempo sono comparsi file nuovi nella cartella dei file di OJS, lo segnala.
+1. Checks that mail in the local copy's `config.inc.php` is set to `default = log`. If not, it stops: **no email is actually sent**.
+2. Backs up the local copy's database and the `plugins/generic/mobileDashboard` folder (if present).
+3. Replaces names, email addresses, titles and journal names with **placeholder data** (`placeholders.sql`), so the images in `tests/results/` show no real data.
+4. Installs the plugin from this repository (only the package files: `MobileDashboardPlugin.php`, `index.php`, `version.xml`, `styles/`, `locale/`), enables it for the site and disables any plugins listed in `MD_DISABLE`.
+5. At the end it **restores everything** (database, plugin folder, cache), even if a test fails or the suite is interrupted with Ctrl+C. If new files appeared in the OJS files folder in the meantime, it reports them.
 
-## Cosa copre
+## What it covers
 
-- **Statici:** formato della versione, nome e classe del plugin; `php -l` e `node --check` su tutti i file; stesse frasi in inglese e in italiano, e ogni frase usata nel PHP presente in inglese; nessuna regola di `mobile.css` che cambi il computer (tutto sta dentro `@media (max-width: 900px)`, tranne gli elementi creati dal plugin); file caricati con il plugin acceso e non caricati con il plugin spento.
-- **Telefono:** nessuna pagina più larga dello schermo e nessun contenuto tagliato fuori dallo schermo; menu ☰ che si apre dentro lo schermo, arriva all'ultima voce e si chiude toccando fuori; menu delle fasi del workflow che si apre e si richiude scegliendo una fase; tabelle a schede con le etichette; elenchi dei plugin (rivista, Plugin Gallery, Administration) con nome e spunta sulla stessa riga e descrizione intera; Users & Roles con il nome in grassetto in alto; riquadri delle impostazioni abbastanza larghi; campi del Profilo (Identity, Contact) larghi quanto il modulo, uno per riga; pannello Tasks, statistiche ed elenchi (Counter R5, Announcements, Institutions) senza riquadri nei riquadri né titoli ripetuti, con Export sulla riga del titolo; schede su una riga che scorre di lato e resta sotto l'intestazione, con la scheda attiva unita al pannello; swipe con tocchi simulati che cambia scheda (prima le interne, poi le esterne, anche un po' obliquo, sopra una griglia, sulla pagina grigia sotto un pannello corto, nel Profilo e in Appearance > Setup, che ha lo stesso id di Site Setup) e trascinamento verticale che fa solo scorrere la pagina; dopo un tocco e uno swipe la linea colorata solo sulla scheda aperta (anche nel Profilo) e il pallino del focus solo con la tastiera; griglie nelle schede laterali (Workflow > Components) con i pulsanti dentro l'intestazione e le righe larghe quanto la griglia; nei pannelli laterali con un modulo, nuovo (Hosted Journals > Edit) o vecchio (Create Section), etichette e campi staccati dal bordo; editor del menu di navigazione con Assigned e Unassigned uno sotto l'altro, che si aprono e si chiudono toccando il titolo; Users & Roles con ogni data accanto al suo ruolo; barra dei passi di Invite to a role dentro lo schermo; DOIs senza il titolo che ripete la scheda; date del grafico delle statistiche senza sovrapposizioni; nessun errore JavaScript dai file del plugin.
-- **Computer:** 17 pagine e finestre fotografate a 1300 px con e senza plugin: devono essere identiche al pixel. Prima di ogni foto la prova aspetta che la pagina abbia finito di caricare dalla rete; una coppia diversa si rifotografa una volta, perché a volte un elenco arriva dall'API dopo la foto, e se alla seconda prova coincide il controllo lo dice («alla seconda prova»). Una differenza dovuta al plugin resta anche alla seconda prova.
+- **Static:** version format, plugin name and class; `php -l` and `node --check` on all files; the same strings in English and Italian, and every string used in the PHP present in English; no rule in `mobile.css` that changes the desktop (everything is inside `@media (max-width: 900px)`, except elements created by the plugin); files loaded with the plugin enabled and not loaded with it disabled.
+- **Phone:**
+  - Layout: no page wider than the screen and no content cut off outside it.
+  - Menus: the ☰ menu opens inside the screen, reaches the last item and closes when tapping outside. A header button such as the journal switcher closes ☰. The workflow stage menu opens and closes again when a stage is chosen.
+  - Tables and lists:
+    - Tables become cards with labels.
+    - In the plugin lists (journal, Plugin Gallery, Administration), name and checkbox share a row and the description is shown in full.
+    - Users & Roles shows the name in bold at the top, with each date next to its role.
+    - Tasks, statistics and lists (Counter R5, Announcements, Institutions) have no boxes inside boxes and no repeated headings, with Export on the heading row.
+    - DOIs has no heading repeating the tab.
+  - Forms:
+    - Settings boxes are wide enough.
+    - Profile fields (Identity, Contact) are as wide as the form, one per row.
+    - Multilingual fields show each language one below the other.
+    - In side panels with a form, both new (Hosted Journals > Edit) and old (Create Section), labels and fields are away from the edge.
+  - Tabs: tabs stay on one row that scrolls sideways and stays below the header, with the active tab joined to its panel.
+  - Swipe with simulated touches changes tab:
+    - inner tabs first, then outer ones;
+    - also slightly diagonal, over a grid, and on the grey page below a short panel;
+    - in the Profile and in Appearance > Setup, which has the same id as Site Setup;
+    - on a text field only if it is not focused.
+    - Vertical dragging only scrolls the page.
+  - Tab indicators: after a tap and a swipe, the coloured line is only on the open tab (also in the Profile), and the focus ring appears only with the keyboard.
+  - Grids in side tabs (Workflow > Components) have their buttons inside the header and rows as wide as the grid.
+  - Navigation menu editor:
+    - Assigned and Unassigned are stacked and open and close by tapping the heading.
+    - Back above 900 px without reloading, the editor has no added controls.
+  - The Invite to a role step bar fits inside the screen.
+  - Statistics chart dates do not overlap.
+  - There are no JavaScript errors from the plugin's files.
+- **Desktop:**
+  - 17 pages and windows are captured at 1300 px with and without the plugin. Each pair must match to the pixel.
+  - Before each capture, the check waits for the page to finish loading from the network.
+  - A pair that differs is captured again once, because a list sometimes arrives from the API after the capture. If it matches on the second try, the check says so ("on the second try").
+  - A difference caused by the plugin remains on the second try.
 
-## Restano a mano
+## Still checked by hand
 
-- Prova su un telefono vero (la suite simula un iPhone 390×844 in Chrome).
-- Installazione del pacchetto su un sito online.
+- A test on a real phone. The suite simulates a 390×844 iPhone in Chrome.
+- Installing the package on a live site.
 
-## Valori usati
+## Settings
 
-Si possono cambiare con variabili d'ambiente:
+These can be changed with environment variables:
 
-- `MD_LOCALE` (obbligatoria): cartella della copia Docker, quella con `docker-compose.yml`;
-- `MD_BASE=http://localhost:8080`: indirizzo della copia locale;
-- `MD_JOURNAL=jse`: rivista dei test (percorso nell'URL);
-- `MD_WORKFLOW=69/3` e `MD_WORKFLOW2=12/4`: un articolo in revisione e uno in produzione (`id/fase`);
-- `MD_ADMIN` e `MD_ADMIN_PASSWORD`: amministratore del sito (se mancano: il primo amministratore nel database e la password scritta in `import-locale.ps1` nella copia Docker); la password non viene mai stampata;
-- `MD_DISABLE`: altri plugin che cambiano le stesse pagine, da spegnere durante i test (nomi come in `plugin_settings`, separati da spazi; di solito nessuno);
-- `MD_CHROME`: percorso del browser, se non è nella cartella solita.
+- `MD_LOCALE` (required): folder of the Docker copy, the one containing `docker-compose.yml`.
+- `MD_BASE=http://localhost:8080`: address of the local copy. Only `localhost`, `127.0.0.1` or `[::1]` are accepted.
+- `MD_JOURNAL=jse`: journal used by the tests (its path in the URL).
+- `MD_WORKFLOW=69/3` and `MD_WORKFLOW2=12/4`: one submission in review and one in production (`id/stage`).
+- `MD_ADMIN` and `MD_ADMIN_PASSWORD`: site administrator. If they are missing, the suite uses the first administrator in the database and the password written in `import-locale.ps1` in the Docker copy. The password is never printed.
+- `MD_DISABLE`: other plugins that change the same pages, to disable during the tests. Use the names in `plugin_settings`, separated by spaces. Usually none.
+- `MD_CHROME`: path to the browser, if it is not in the usual folder.
 
-## Risultati
+## Results
 
-In `tests/risultati/` (ignorata da git) restano le immagini del telefono, le coppie di immagini del computer che non coincidono e `browser.log`. I dati sono finti, ma prima di pubblicare un'immagine conviene guardarla.
+`tests/results/` (ignored by git) keeps:
+- the phone images;
+- the desktop image pairs that do not match;
+- `browser.log`.
+
+The data is placeholder data, but look at an image before publishing it.

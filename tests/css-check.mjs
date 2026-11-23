@@ -2,10 +2,9 @@
 // Copyright (C) 2026 Stefano Natangelo
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Controlla che mobile.css cambi qualcosa solo sotto i 900 px: ogni regola
-// deve stare dentro @media (max-width: 900px), tranne quelle che toccano solo
-// gli elementi creati dal plugin (#md..., .md...), che sul computer
-// restano nascosti.
+// Checks that mobile.css only changes things below 900 px: every rule must
+// be inside @media (max-width: 900px), except those that only touch elements
+// created by the plugin (#md..., .md...), which stay hidden on the desktop.
 //   node css-check.mjs <mobile.css>
 import { readFileSync } from 'node:fs';
 
