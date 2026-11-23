@@ -80,6 +80,19 @@
         setOpen(isOpen());
     }
 
+    /* Another control of the header (journal switcher, help, tasks, user
+       menu) opens its own menu: the side menu closes so the two do not
+       overlap. Added once on the document, since Vue may redraw the header. */
+    document.addEventListener('click', function (e) {
+        if (!isOpen() || !e.target.closest) {
+            return;
+        }
+        var control = e.target.closest('.app__header a, .app__header button, .app__header [role="button"]');
+        if (control && control.id !== 'mdNavToggle') {
+            setOpen(false);
+        }
+    }, true);
+
     /* Tables shown as cards (mobile.css): each cell gets its column title
        as a label. Skipped: the name cell, the first column when it is not a
        number, action/menu columns, full-row cells and long texts
@@ -596,8 +609,14 @@
             return;
         }
         var target = e.target;
-        if (target.closest('[role="tablist"], [role="dialog"], input, textarea, select, [contenteditable], .tox, iframe, canvas, video, audio, [draggable="true"], .-isOrdering, .ui-sortable')
+        if (target.closest('[role="tablist"], [role="dialog"], input[type="range"], .tox, iframe, canvas, video, audio, [draggable="true"], .-isOrdering, .ui-sortable')
             || e.clientX < 24 || e.clientX > window.innerWidth - 24) {
+            return;
+        }
+        // A text field changes tab too, unless it is the one being typed
+        // in: there the finger moves the cursor or selects text
+        var field = target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+        if (field && (field === document.activeElement || field.contains(document.activeElement))) {
             return;
         }
         var selection = window.getSelection && window.getSelection();

@@ -34,3 +34,7 @@ UPDATE submission_file_settings SET setting_value=CONCAT('document-',submission_
 UPDATE notes SET title='Sample discussion', contents='<p>Placeholder message.</p>';
 UPDATE issue_settings SET setting_value='Sample issue' WHERE setting_name='title';
 UPDATE issue_settings SET setting_value='' WHERE setting_name='description';
+-- Una seconda lingua per i moduli della rivista di prova (solo i moduli, non
+-- l'interfaccia), per vedere due lingue insieme
+UPDATE site SET installed_locales='["en","es"]' WHERE installed_locales='["en"]';
+UPDATE journal_settings SET setting_value='["en","es"]' WHERE setting_name='supportedFormLocales' AND setting_value='["en"]' AND journal_id=(SELECT journal_id FROM journals WHERE path='jse');

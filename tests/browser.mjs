@@ -182,6 +182,29 @@ try {
       return !document.documentElement.classList.contains('md-nav-open') && !document.body.classList.contains('md-nav-open');
     });
     check('menu ☰: si chiude toccando fuori', closed);
+    // Col menu ☰ aperto, un tocco sul pulsante per cambiare rivista (il primo
+    // controllo dell'intestazione dopo ☰) apre il suo menu e chiude il ☰
+    const sw = await ev(async () => {
+      document.getElementById('mdNavToggle').click(); await new Promise(r => setTimeout(r, 700));
+      const t = document.getElementById('mdNavToggle').getBoundingClientRect();
+      const c = [...document.querySelectorAll('.app__header a, .app__header button')]
+        .filter(e => e.id !== 'mdNavToggle' && e.getClientRects().length && e.getBoundingClientRect().left > t.right - 1)
+        .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left)[0];
+      if (!c) return 'pulsante delle riviste assente';
+      const r = c.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), open: document.body.classList.contains('md-nav-open') };
+    });
+    if (sw?.x) {
+      await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: sw.x, y: sw.y, id: 1 }] });
+      await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await sleep(900);
+    }
+    const sw2 = await ev(() => ({ navOpen: document.body.classList.contains('md-nav-open'),
+      expanded: [...document.querySelectorAll('.app__header [aria-expanded="true"]')].filter(e => e.id !== 'mdNavToggle').length }));
+    check(`menu ☰: toccando il cambio rivista il ☰ si chiude e si apre il menu delle riviste`, sw?.open && !sw2.navOpen && sw2.expanded > 0, { sw, sw2 });
+    await shot('02b-cambio-rivista');
+    await ev(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); document.body.click(); return 1; });
+    await go(`/${J}/submissions`, 8000);
 
     // Workflow e menu delle fasi
     await go(`/${J}/workflow/index/${WF}`, 8000);
@@ -394,7 +417,7 @@ try {
       if (!form) return 'modulo assente';
       const fw = form.getBoundingClientRect().width;
       return { form: Math.round(fw), fields: [...form.querySelectorAll('input[type=text], input[type=email], input[type=tel], select, .tox-tinymce')]
-        .filter(e => e.getClientRects().length && !e.closest('.localization_popover_container'))
+        .filter(e => e.getClientRects().length && !e.closest('.localization_popover'))
         .map(e => { const r = e.getBoundingClientRect(); return { id: (e.id || e.className).split(/[- ]/)[0], pct: Math.round(r.width / fw * 100), top: Math.round(r.top), bottom: Math.round(r.bottom) }; }) };
     });
     await go(`/${J}/user/profile`, 9000);
@@ -420,6 +443,21 @@ try {
     mk = await marks();
     check(`Profilo: dopo un tocco e uno swipe la linea colorata resta solo sulla scheda aperta (${tabNames(tb)})`,
       tabNames(tb) === 'Contact' && mk.Roles?.hover && Object.values(mk).every(m => m.line === m.open), mk);
+    // Su un campo di testo: se è quello in cui si scrive lo swipe non cambia
+    // scheda, se non è selezionato sì
+    const fieldSpot = (focus) => ev(f => {
+      const i = [...document.querySelectorAll('.app__main .ui-tabs-panel input[type=text], .app__main .ui-tabs-panel input[type=email]')].find(e => e.getClientRects().length);
+      if (!i) return null;
+      if (f) i.focus({ preventScroll: true }); else document.activeElement?.blur();
+      const r = i.getBoundingClientRect();
+      return r.top > 120 && r.bottom < innerHeight - 20 ? { y: Math.round(r.top + r.height / 2) } : null;
+    }, focus);
+    let fs = await fieldSpot(true);
+    tb = fs ? await drag(70, fs.y, 330, fs.y + 4) : 'campo non visibile';
+    check(`Profilo: sul campo in cui si scrive lo swipe non cambia scheda (${tabNames(tb)})`, tabNames(tb) === 'Contact', tb);
+    fs = await fieldSpot(false);
+    tb = fs ? await drag(70, fs.y, 330, fs.y + 4) : 'campo non visibile';
+    check(`Profilo: su un campo non selezionato lo swipe cambia scheda (${tabNames(tb)})`, tabNames(tb) === 'Identity', tb);
     await go('/index/admin/settings', 9000);
     await clickText('Languages');
     await sleep(3000);
@@ -470,6 +508,25 @@ try {
       return i && l ? { label: Math.round(l.getBoundingClientRect().left), field: Math.round(i.getBoundingClientRect().left), right: Math.round(innerWidth - i.getBoundingClientRect().right) } : 'modulo non trovato';
     });
     check(`Create Section: etichette e campi staccati dai bordi (${oldForm?.label}/${oldForm?.field}/${oldForm?.right} px)`, oldForm?.label >= 12 && oldForm?.field >= 12 && oldForm?.right >= 12, oldForm);
+    // Due lingue insieme (Appearance > Setup, seconda lingua accesa): OJS le
+    // mette in due colonne a metà; sul telefono una sotto l'altra
+    await go(`/${J}/management/settings/website`, 8000);
+    await clickText('Setup');
+    await sleep(2500); await netIdle(1000, 20000);
+    const langOn = await ev(() => {
+      const b = [...document.querySelectorAll('.app__main .pkpFormLocales__locale')].find(e => e.tagName === 'BUTTON' && e.offsetParent && !e.classList.contains('pkpFormLocales__locale--isActive'));
+      if (!b) return 'nessuna seconda lingua';
+      b.click(); return 'ok';
+    });
+    await sleep(1500);
+    const twoLang = await ev(() => {
+      const g = [...document.querySelectorAll('.pkpForm--hasManyVisibleLocales .pkpFormGroup__localeGroup')].find(e => e.offsetParent && e.querySelectorAll('.pkpFormGroup__locale--isVisible').length >= 2);
+      if (!g) return 'campi multilingue non trovati';
+      const r = [...g.querySelectorAll('.pkpFormGroup__locale--isVisible')].map(e => e.getBoundingClientRect());
+      return { widths: r.map(x => Math.round(x.width)), stacked: r[1].top >= r[0].bottom - 1 };
+    });
+    check(`Due lingue insieme: campi uno sotto l'altro a tutta larghezza (${langOn}, ${twoLang?.widths})`, twoLang?.stacked && twoLang.widths?.every(w => w >= 300), twoLang);
+    await shot('16a-due-lingue');
     // Menu di navigazione (Edit): Assigned e Unassigned uno sotto l'altro, a
     // tutta larghezza, e ciascuno si apre e si chiude toccando il titolo
     await go(`/${J}/management/settings/website`, 8000);
@@ -534,7 +591,12 @@ try {
       return { labels: sc.ticks.map(t => t.label), gaps };
     });
     let ticks = await readTicks();
-    for (let i = 0; i < 30 && !(ticks?.labels?.length >= 2); i++) { await sleep(500); ticks = await readTicks(); }
+    for (let i = 0; i < 40 && !(ticks?.labels?.length >= 2); i++) { await sleep(500); ticks = await readTicks(); }
+    // a volte i dati non arrivano (grafico vuoto, una data sola): si ricarica una volta
+    if (!(ticks?.labels?.length >= 2)) {
+      await go(`/${J}/stats/publications/publications`, 9000); await netIdle(1000, 20000);
+      for (let i = 0; i < 40 && !(ticks?.labels?.length >= 2); i++) { await sleep(500); ticks = await readTicks(); }
+    }
     await sleep(1500); ticks = await readTicks();
     check(`Statistiche: date sotto il grafico senza sovrapposizioni (${ticks?.labels?.join(' / ')})`, ticks?.labels?.length >= 2 && ticks.gaps.every(g => g > 4), ticks);
     await shot('17-statistiche');
