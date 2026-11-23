@@ -182,6 +182,29 @@ try {
       return !document.documentElement.classList.contains('md-nav-open') && !document.body.classList.contains('md-nav-open');
     });
     check('menu ☰: si chiude toccando fuori', closed);
+    // Col menu ☰ aperto, un tocco sul pulsante per cambiare rivista (il primo
+    // controllo dell'intestazione dopo ☰) apre il suo menu e chiude il ☰
+    const sw = await ev(async () => {
+      document.getElementById('mdNavToggle').click(); await new Promise(r => setTimeout(r, 700));
+      const t = document.getElementById('mdNavToggle').getBoundingClientRect();
+      const c = [...document.querySelectorAll('.app__header a, .app__header button')]
+        .filter(e => e.id !== 'mdNavToggle' && e.getClientRects().length && e.getBoundingClientRect().left > t.right - 1)
+        .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left)[0];
+      if (!c) return 'pulsante delle riviste assente';
+      const r = c.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), open: document.body.classList.contains('md-nav-open') };
+    });
+    if (sw?.x) {
+      await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: sw.x, y: sw.y, id: 1 }] });
+      await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await sleep(900);
+    }
+    const sw2 = await ev(() => ({ navOpen: document.body.classList.contains('md-nav-open'),
+      expanded: [...document.querySelectorAll('.app__header [aria-expanded="true"]')].filter(e => e.id !== 'mdNavToggle').length }));
+    check(`menu ☰: toccando il cambio rivista il ☰ si chiude e si apre il menu delle riviste`, sw?.open && !sw2.navOpen && sw2.expanded > 0, { sw, sw2 });
+    await shot('02b-cambio-rivista');
+    await ev(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); document.body.click(); return 1; });
+    await go(`/${J}/submissions`, 8000);
 
     // Workflow e menu delle fasi
     await go(`/${J}/workflow/index/${WF}`, 8000);

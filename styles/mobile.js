@@ -80,6 +80,19 @@
         setOpen(isOpen());
     }
 
+    /* Another control of the header (journal switcher, help, tasks, user
+       menu) opens its own menu: the side menu closes so the two do not
+       overlap. Added once on the document, since Vue may redraw the header. */
+    document.addEventListener('click', function (e) {
+        if (!isOpen() || !e.target.closest) {
+            return;
+        }
+        var control = e.target.closest('.app__header a, .app__header button, .app__header [role="button"]');
+        if (control && control.id !== 'mdNavToggle') {
+            setOpen(false);
+        }
+    }, true);
+
     /* Tables shown as cards (mobile.css): each cell gets its column title
        as a label. Skipped: the name cell, the first column when it is not a
        number, action/menu columns, full-row cells and long texts
