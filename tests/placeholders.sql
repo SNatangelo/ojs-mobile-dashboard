@@ -2,9 +2,9 @@
 -- Copyright (C) 2026 Stefano Natangelo
 -- SPDX-License-Identifier: AGPL-3.0-only
 --
--- Dati finti al posto di nomi, email, titoli e riviste reali.
--- Usato da run.sh SOLO sulla copia locale, dopo aver salvato il database:
--- alla fine dei test il database viene rimesso com'era.
+-- Placeholder data in place of real names, email addresses, titles and journals.
+-- Used by run.sh ONLY on the local copy, after backing up the database:
+-- the database is restored at the end of the tests.
 UPDATE user_settings SET setting_value=ELT(MOD(user_id,8)+1,'Alex','Sam','Jordan','Taylor','Morgan','Casey','Robin','Jamie') WHERE setting_name='givenName';
 UPDATE user_settings SET setting_value=ELT(MOD(user_id,9)+1,'Smith','Rossi','Garcia','Novak','Silva','Kim','Weber','Dubois','Okafor') WHERE setting_name='familyName';
 UPDATE user_settings SET setting_value='' WHERE setting_name IN ('preferredPublicName','biography','signature','preferredAvatarInitials');
@@ -34,7 +34,7 @@ UPDATE submission_file_settings SET setting_value=CONCAT('document-',submission_
 UPDATE notes SET title='Sample discussion', contents='<p>Placeholder message.</p>';
 UPDATE issue_settings SET setting_value='Sample issue' WHERE setting_name='title';
 UPDATE issue_settings SET setting_value='' WHERE setting_name='description';
--- Una seconda lingua per i moduli della rivista di prova (solo i moduli, non
--- l'interfaccia), per vedere due lingue insieme
+-- A second form language for the test journal (forms only, not the
+-- interface), to show two languages together
 UPDATE site SET installed_locales='["en","es"]' WHERE installed_locales='["en"]';
 UPDATE journal_settings SET setting_value='["en","es"]' WHERE setting_name='supportedFormLocales' AND setting_value='["en"]' AND journal_id=(SELECT journal_id FROM journals WHERE path='jse');

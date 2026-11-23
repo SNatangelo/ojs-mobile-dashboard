@@ -1,4 +1,4 @@
-tests/risultati/
+tests/results/
 *.tar.gz
 .DS_Store
 Thumbs.db
