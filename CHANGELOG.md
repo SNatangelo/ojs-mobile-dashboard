@@ -20,7 +20,7 @@ First release.
 - Grids inside side tabs (Workflow Settings > Components and the like): buttons stay inside the header and rows use the full width.
 - Multilingual forms with a second language shown: the two languages one below the other instead of two half-width columns.
 - The journal switcher and the other header buttons close the ☰ menu when they open their own.
-- Navigation menu editor: Assigned and Unassigned one below the other, each opening and closing with a tap on its title.
+- Navigation menu editor: Assigned and Unassigned one below the other, each opening and closing with a tap on its title; widening the window past 900 px without reloading gives back the headings as OJS makes them.
 - DOIs: filters above the list, no title repeating the tab name. Invite to a role: the step bar fits the screen.
 - No changes above 900 px; site-wide plugin with no settings.
 - English and Italian localizations.

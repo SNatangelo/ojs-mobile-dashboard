@@ -174,12 +174,14 @@ def trusted_dependabot_exemption(pr):
     }
 
 
-def contributor_ids(api: API, pr_number: int, opener, pr_context=None, ai_exemptions=None):
+def contributor_ids(api: API, pr_number: int, opener, pr_context=None, ai_exemptions=None, head_sha=None):
     """Include the submitter and every GitHub-linked author/coauthor.
 
     A bot opener is excluded only when the full GitHub PR context independently
     verifies the exact Dependabot bot and same-source-repository head. All commit
     authors are still enumerated, and unlinked authors remain a hard failure.
+    With head_sha, every page must report that same PR head: if a push lands
+    during the check, the authors could belong to another revision.
     """
     automation_exemption = trusted_dependabot_exemption(pr_context)
     if pr_context is not None:
@@ -189,7 +191,7 @@ def contributor_ids(api: API, pr_number: int, opener, pr_context=None, ai_exempt
     people = {} if automation_exemption else {opener["id"]: opener["login"]}
     query = """query($owner:String!, $name:String!, $number:Int!, $after:String) {
       repository(owner:$owner, name:$name) {
-        pullRequest(number:$number) { commits(first:100, after:$after) {
+        pullRequest(number:$number) { headRefOid commits(first:100, after:$after) {
           nodes { commit { authors(first:100) {
             nodes { email user { databaseId login } } pageInfo { hasNextPage }
           } } } pageInfo { hasNextPage endCursor }
@@ -203,7 +205,10 @@ def contributor_ids(api: API, pr_number: int, opener, pr_context=None, ai_exempt
             "number": pr_number, "after": cursor}})
         if result.get("errors"):
             raise Failure("Unable to enumerate all PR authors")
-        connection = result["data"]["repository"]["pullRequest"]["commits"]
+        pull = result["data"]["repository"]["pullRequest"]
+        if head_sha is not None and pull.get("headRefOid") != head_sha:
+            raise Failure("Pull request head changed during the check; it will be checked again")
+        connection = pull["commits"]
         for node in connection["nodes"]:
             authors = node["commit"]["authors"]
             if authors["pageInfo"]["hasNextPage"]:
@@ -274,7 +279,7 @@ def execute(public: API, private: API, event: dict, env: dict):
             "archive_path": archived(archive_path), "signature_text": SIGN}))
         automation_exemption = trusted_dependabot_exemption(pr)
         ai_exemptions = []
-        people = contributor_ids(public, number, pr["user"], pr_context=pr, ai_exemptions=ai_exemptions)
+        people = contributor_ids(public, number, pr["user"], pr_context=pr, ai_exemptions=ai_exemptions, head_sha=sha)
         comments = list(public.pages(f"/repos/{SOURCE}/issues/{number}/comments"))
         prompts = [c for c in comments if MARKER in (c.get("body") or "")
                    and (c.get("user") or {}).get("login") == "github-actions[bot]"

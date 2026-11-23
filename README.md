@@ -115,7 +115,7 @@ Public journal pages, the reader interface and the theme are not touched.
 
 ## Testing and known limitations
 
-The [automated browser suite](tests/README.md) runs against a local OJS 3.5.0-6 Docker copy with placeholder data. It defines **156 checks**: **11 on files and the installed plugin**, **128 on a simulated phone** (390 × 844, with simulated touches for the tab swipes) and **17 on a computer**, where 17 pages and dialogs are captured at 1300 px with and without the plugin and must be identical pixel by pixel. These are suite counts, not an execution report.
+The [automated browser suite](tests/README.md) runs against a local OJS 3.5.0-6 Docker copy with placeholder data. It defines **158 checks**: **11 on files and the installed plugin**, **130 on a simulated phone** (390 × 844, with simulated touches for the tab swipes) and **17 on a computer**, where 17 pages and dialogs are captured at 1300 px with and without the plugin and must be identical pixel by pixel. These are suite counts, not an execution report.
 
 The CI workflow checks PHP and JavaScript syntax, Bash syntax, that `mobile.css` changes nothing above 900 px, the version format, that the English and Italian strings match, and file headers. It does not start Docker or OJS; the browser suite is **not run by CI**.
 

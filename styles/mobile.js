@@ -172,16 +172,45 @@
             header.setAttribute('tabindex', '0');
             header.setAttribute('aria-controls', list.id);
             header.insertAdjacentHTML('beforeend', CHEVRON);
-            header.addEventListener('click', function () {
+            header.lastElementChild.classList.add('md-nav-chevron');
+            header.mdNavClick = function () {
                 setNavListOpen(column, column.classList.contains('md-nav-closed'));
-            });
-            header.addEventListener('keydown', function (e) {
+            };
+            header.mdNavKey = function (e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     setNavListOpen(column, column.classList.contains('md-nav-closed'));
                 }
-            });
+            };
+            header.addEventListener('click', header.mdNavClick);
+            header.addEventListener('keydown', header.mdNavKey);
             setNavListOpen(column, column.classList.contains('pkp_nav_assigned'));
+        });
+    }
+
+    // Wide screen again (no reload): the headings and lists go back to what
+    // OJS made, so nothing of this stays above 900 px
+    function removeNavLists() {
+        document.querySelectorAll('.pkp_nav_management .md-nav-toggle').forEach(function (header) {
+            var column = header.parentElement;
+            var list = column && column.querySelector(':scope > ul');
+            header.removeEventListener('click', header.mdNavClick);
+            header.removeEventListener('keydown', header.mdNavKey);
+            delete header.mdNavClick;
+            delete header.mdNavKey;
+            header.querySelectorAll(':scope > .md-nav-chevron').forEach(function (svg) {
+                svg.remove();
+            });
+            header.classList.remove('md-nav-toggle');
+            ['role', 'tabindex', 'aria-controls', 'aria-expanded'].forEach(function (name) {
+                header.removeAttribute(name);
+            });
+            if (column) {
+                column.classList.remove('md-nav-closed');
+            }
+            if (list && /^mdNavList\d+$/.test(list.id)) {
+                list.removeAttribute('id');
+            }
         });
     }
 
@@ -891,6 +920,7 @@
                 if (n) {
                     n.removeAttribute('inert');
                 }
+                removeNavLists();
             } else {
                 setOpen(isOpen());
                 // tables, workflow and tabs opened while the screen was wide

@@ -35,7 +35,10 @@ WANT=" ${*:-$ALL} "
 if [ -z "$LOCALE" ] || [ ! -f "$LOCALE/docker-compose.yml" -a ! -f "$LOCALE/compose.yaml" -a ! -f "$LOCALE/docker-compose.yaml" ]; then
   echo "Indicate in MD_LOCALE la cartella della copia Docker di OJS (quella con docker-compose.yml)."; exit 2
 fi
-case "$B" in http://localhost*|http://127.0.0.1*) ;; *) echo "MD_BASE deve essere la copia locale (localhost)."; exit 2;; esac
+# Solo la copia locale: host esattamente localhost, 127.0.0.1 o [::1], porta e
+# percorso facoltativi, niente utente@ nell'URL (la password va a questo indirizzo)
+[[ "$B" =~ ^http://(localhost|127\.0\.0\.1|\[::1\])(:[0-9]{1,5})?(/[^@]*)?$ ]] \
+  || { echo "MD_BASE deve essere la copia locale (http://localhost, 127.0.0.1 o [::1], senza utente nell'URL)."; exit 2; }
 for g in $WANT; do case " $ALL " in *" $g "*) ;; *) echo "Gruppo sconosciuto: $g (gruppi: $ALL)"; exit 2;; esac; done
 want() { [[ "$WANT" == *" $1 "* ]]; }
 winpath() { if command -v cygpath >/dev/null; then cygpath -w "$1"; else echo "$1"; fi; }
@@ -68,7 +71,11 @@ rm -rf "$OUT"; mkdir -p "$OUT"
 
 # ---------------------------------------------------------------- salvataggio
 echo "Salvo database e plugin della copia locale"
-dc exec -T ojs sh -c "touch /tmp/mdtests-marker; cd /var/www/html/plugins/generic && ls -d $NAME 2>/dev/null | tar -czf /tmp/mdtests-plugin.tgz -T -"
+# La cartella del plugin si salva e si controlla l'archivio prima di toccarla;
+# se non c'era, lo si annota (al ripristino viene tolta)
+dc exec -T ojs sh -c "touch /tmp/mdtests-marker; rm -f /tmp/mdtests-plugin.tgz /tmp/mdtests-plugin.none; cd /var/www/html/plugins/generic \
+  && if [ -e $NAME ]; then tar -czf /tmp/mdtests-plugin.tgz $NAME && tar -tzf /tmp/mdtests-plugin.tgz | grep -qx '$NAME/version.xml'; else touch /tmp/mdtests-plugin.none; fi" \
+  || { echo "Salvataggio della cartella del plugin non riuscito: mi fermo senza toccare nulla."; exit 2; }
 dc exec -T db sh -c 'mysqldump -uojs -pojs --single-transaction ojs > /tmp/mdtests-db.sql 2>/dev/null && test -s /tmp/mdtests-db.sql' \
   || { echo "Salvataggio del database non riuscito: mi fermo senza toccare nulla."; exit 2; }
 
@@ -77,8 +84,13 @@ restore() {
   echo; echo "## Ripristino della copia locale"
   dc exec -T db sh -c 'mysql -uojs -pojs ojs < /tmp/mdtests-db.sql 2>/dev/null && rm -f /tmp/mdtests-db.sql' \
     && echo "  database rimesso com'era" || echo "  ATTENZIONE: ripristino del database non riuscito (copia in /tmp/mdtests-db.sql del container db)"
-  dc exec -T ojs sh -c "cd /var/www/html/plugins/generic && rm -rf $NAME && tar -xzf /tmp/mdtests-plugin.tgz && chown -R www-data:www-data . && rm -f /tmp/mdtests-plugin.tgz" \
-    && echo "  cartella del plugin rimessa com'era"
+  # Prima si estrae l'archivio a parte e lo si controlla, poi si sostituisce
+  dc exec -T ojs sh -c "cd /var/www/html/plugins/generic && if [ -f /tmp/mdtests-plugin.none ]; then rm -rf $NAME && rm -f /tmp/mdtests-plugin.none; \
+    else rm -rf /tmp/mdtests-restore && mkdir /tmp/mdtests-restore && tar -xzf /tmp/mdtests-plugin.tgz -C /tmp/mdtests-restore \
+    && [ -f /tmp/mdtests-restore/$NAME/version.xml ] && rm -rf $NAME && mv /tmp/mdtests-restore/$NAME . && chown -R www-data:www-data $NAME \
+    && rm -rf /tmp/mdtests-restore /tmp/mdtests-plugin.tgz; fi" \
+    && echo "  cartella del plugin rimessa com'era" \
+    || echo "  ATTENZIONE: cartella del plugin non rimessa (archivio in /tmp/mdtests-plugin.tgz del container ojs)"
   clear_cache
   local n; n=$(dc exec -T ojs sh -c 'find /var/www/files -newer /tmp/mdtests-marker -type f | wc -l; rm -f /tmp/mdtests-marker')
   [ "${n:-0}" = 0 ] && echo "  nessun file nuovo nella cartella dei file di OJS" || echo "  ATTENZIONE: $n file nuovi in /var/www/files"
