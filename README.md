@@ -130,10 +130,10 @@ Test scripts are not part of the installable release package.
 
 Please use [GitHub Issues](https://github.com/SNatangelo/ojs-mobile-dashboard/issues) for reproducible bug reports and feature requests. Include your OJS version, the phone and browser, the page and, if possible, a screenshot without personal data.
 
-Pull requests are welcome. Keep changes focused and include relevant test evidence; changes to `main` go through review and automated checks.
+Pull requests are welcome. Keep changes focused and include relevant test evidence; changes to `main` go through review and automated checks. Before a contribution is merged, its author accepts the [Contributor License Agreement](CLA.md) with a comment on the pull request: you keep your copyright, and the contribution stays available under the AGPL. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
 Copyright © 2026 Stefano Natangelo.
 
-Licensed under the **GNU Affero General Public License, version 3 only** (`AGPL-3.0-only`). See [LICENSE](LICENSE).
+Licensed under the **GNU Affero General Public License, version 3 only** (`AGPL-3.0-only`). See [LICENSE](LICENSE). Separate licences are possible; see [LICENSING.md](LICENSING.md).
