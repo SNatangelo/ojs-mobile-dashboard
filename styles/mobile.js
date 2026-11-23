@@ -596,8 +596,14 @@
             return;
         }
         var target = e.target;
-        if (target.closest('[role="tablist"], [role="dialog"], input, textarea, select, [contenteditable], .tox, iframe, canvas, video, audio, [draggable="true"], .-isOrdering, .ui-sortable')
+        if (target.closest('[role="tablist"], [role="dialog"], input[type="range"], .tox, iframe, canvas, video, audio, [draggable="true"], .-isOrdering, .ui-sortable')
             || e.clientX < 24 || e.clientX > window.innerWidth - 24) {
+            return;
+        }
+        // A text field changes tab too, unless it is the one being typed
+        // in: there the finger moves the cursor or selects text
+        var field = target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+        if (field && (field === document.activeElement || field.contains(document.activeElement))) {
             return;
         }
         var selection = window.getSelection && window.getSelection();
