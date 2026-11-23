@@ -556,6 +556,23 @@ try {
     const nav2 = await navState();
     check('Menu di navigazione: un tocco sul titolo apre Unassigned', nav2?.open?.[1] === true, nav2);
     await shot('16-menu-navigazione');
+    // Allargando la finestra sopra 900 px senza ricaricare, i titoli tornano
+    // come li fa OJS (niente frecce, pulsanti o liste chiuse); di nuovo sul
+    // telefono tornano i controlli
+    await send('Emulation.setDeviceMetricsOverride', { width: 1300, height: 900, deviceScaleFactor: 1, mobile: false });
+    await sleep(800);
+    const navWide = await ev(() => {
+      const heads = [...document.querySelectorAll('.pkp_nav_management > * > .pkp_nav_management_header')];
+      return { heads: heads.length, extras: heads.filter(h => h.classList.contains('md-nav-toggle') || h.querySelector('svg') || ['role', 'tabindex', 'aria-controls', 'aria-expanded'].some(a => h.hasAttribute(a))).length,
+        closed: document.querySelectorAll('.pkp_nav_management .md-nav-closed').length,
+        lists: [...document.querySelectorAll('.pkp_nav_management > * > ul')].filter(u => u.getClientRects().length).length };
+    });
+    check(`Menu di navigazione: sopra 900 px senza ricaricare, niente controlli aggiunti (${navWide?.heads} titoli, ${navWide?.lists} liste visibili)`,
+      navWide?.heads === 2 && navWide.extras === 0 && navWide.closed === 0 && navWide.lists === 2, navWide);
+    await size(390, 844, true);
+    await sleep(800);
+    const nav3 = await navState();
+    check('Menu di navigazione: tornando al telefono, Assigned aperto e Unassigned chiuso', nav3?.open?.[0] === true && nav3.open[1] === false, nav3);
     // Users & Roles: ogni data di inizio accanto al suo ruolo, anche quando un
     // ruolo non ha data
     await go(`/${J}/management/settings/access`, 8000);
