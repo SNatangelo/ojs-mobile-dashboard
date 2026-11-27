@@ -6,6 +6,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 # Changelog
 
+## 1.0.0.2 — Phone menu robustness
+
+- On phones (≤ 900 px) the ☰ drawer keeps working when another stylesheet also styles `#app-nav`, for example with a narrow column width, a low z-index or an absolutely positioned container. Before, the menu could end up under its own backdrop, so its items did not respond to taps (reported on the PKP forum with a sidebar plugin enabled).
+- Only the drawer's structural properties are `!important`: `z-index` and `width` of `#app-nav`, `position` and `width` of its direct container. The rules stay inside `@media (max-width: 900px)`; nothing changes above 900 px and no JavaScript was added.
+- New `drawer` test group: injects a generic synthetic stylesheet, checks with `elementFromPoint` that several menu items receive taps and that the drawer is full width, and resizes phone → desktop → phone without reloading, with and without that stylesheet, checking that no inline styles are left and that the desktop menu is unchanged.
+
 ## 1.0.0.1 — Maintenance release
 
 - Align the public release tag and archive name with the four-part PKP plugin version.

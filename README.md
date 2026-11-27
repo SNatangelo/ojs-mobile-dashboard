@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 # Mobile Dashboard for OJS
 
 [![OJS 3.5.0-6](https://img.shields.io/badge/OJS-3.5.0--6-blue)](#compatibility)
-[![Release 1.0.0.1](https://img.shields.io/badge/release-1.0.0.1-blue)](https://github.com/SNatangelo/ojs-mobile-dashboard/releases/tag/v1.0.0.1)
+[![Release 1.0.0.2](https://img.shields.io/badge/release-1.0.0.2-blue)](https://github.com/SNatangelo/ojs-mobile-dashboard/releases/tag/v1.0.0.2)
 [![AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-green)](LICENSE)
 
 Mobile Dashboard is a site-wide plugin for [Open Journal Systems (OJS)](https://pkp.sfu.ca/software/ojs/) that makes the editorial back end comfortable to use **on a phone**.
@@ -67,11 +67,13 @@ Version **1.0.0** was developed for **OJS 3.5.0-6**. Development builds are inst
 
 Version **1.0.0.1** is a maintenance release with unchanged runtime PHP, CSS, JavaScript and translations. It adds release packaging and documentation for PKP Plugin Gallery submission. The development and deployment evidence above concerns the initial release; a fresh installation and upgrade of the new archive must be verified separately.
 
+Version **1.0.0.2** makes the phone ☰ menu more robust when another stylesheet also styles `#app-nav` (for example a narrow column width or a low z-index): a few structural properties of the drawer are now `!important`, inside the phone media query only. The desktop layout is unchanged.
+
 Other OJS versions and database engines beyond MySQL/MariaDB have not yet been verified.
 
 ## Installation and quick start
 
-1. Download [mobileDashboard-1.0.0.1.tar.gz](https://github.com/SNatangelo/ojs-mobile-dashboard/releases/download/v1.0.0.1/mobileDashboard-1.0.0.1.tar.gz), the installable release package, rather than GitHub's automatic **Source code** downloads.
+1. Download [mobileDashboard-1.0.0.2.tar.gz](https://github.com/SNatangelo/ojs-mobile-dashboard/releases/download/v1.0.0.2/mobileDashboard-1.0.0.2.tar.gz), the installable release package, rather than GitHub's automatic **Source code** downloads.
 2. Install the archive through the OJS plugin management interface (**Upload A New Plugin**) as a **site administrator**.
 3. Enable **Mobile Dashboard** in the list of generic plugins. It is a site-wide plugin: one switch covers every journal and the site administration pages.
 4. Open the back end on a phone and reload the page.

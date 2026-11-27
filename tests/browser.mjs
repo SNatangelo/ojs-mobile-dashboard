@@ -6,7 +6,7 @@
 // the DevTools Protocol, with no libraries.
 //
 //   node browser.mjs <group> <results folder>
-//   groups: phone | desktop
+//   groups: phone | drawer | desktop
 //
 // Variables: MD_BASE (http://localhost:8080), MD_SID (the administrator's
 // OJSESSION cookie, set by run.sh), MD_JOURNAL (jse),
@@ -740,6 +740,81 @@ try {
     await pluginRows('Administration, plugins');
     await go('/index/admin', 6000);
     await phoneBasics('Administration');
+    check('no JavaScript errors from the plugin files', errors.length === 0, errors);
+  }
+
+  if (mode === 'drawer') {
+    // The ☰ drawer must keep working when another stylesheet changes #app-nav.
+    // A generic synthetic sheet (not tied to any plugin) gives the menu a low
+    // z-index and a narrow column width, and makes its direct container
+    // absolute and just as narrow, with selectors more specific than ours.
+    const SYNTHETIC = `html body #app-nav { width: 3.5rem; z-index: 9; }
+      html body #app-nav > * { position: absolute; top: 0; left: 0; width: 3.5rem; }`;
+    const addSynthetic = () => ev(css => { const s = document.createElement('style'); s.id = 'mdTestInterference'; s.textContent = css; document.head.appendChild(s); return 1; }, SYNTHETIC);
+    // Inline styles and state on the elements the drawer touches
+    const inline = () => ev(() => {
+      const n = document.getElementById('app-nav'), c = n && n.firstElementChild;
+      return JSON.stringify([n?.getAttribute('style'), c?.getAttribute('style'), document.documentElement.getAttribute('style'), document.body.getAttribute('style')]);
+    });
+    // Desktop snapshot: inline styles, inert, computed layout and boxes of the menu
+    const snap = () => ev(() => {
+      const n = document.getElementById('app-nav'), c = n && n.firstElementChild;
+      if (!c) return 'menu missing';
+      const cs = e => { const s = getComputedStyle(e); return [s.position, s.width, s.zIndex, s.transform, s.visibility, s.left, s.top, s.overflowY].join(' '); };
+      const box = e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map(Math.round).join(','); };
+      return JSON.stringify({ style: [n.getAttribute('style'), c.getAttribute('style'), document.documentElement.getAttribute('style'), document.body.getAttribute('style')],
+        inert: n.hasAttribute('inert'), open: document.body.classList.contains('md-nav-open'), nav: cs(n) + ' ' + box(n), child: cs(c) + ' ' + box(c) });
+    });
+    // Opens ☰ and checks that the items really receive taps (elementFromPoint
+    // on several of them) and how wide the tappable drawer is
+    const drawer = () => ev(async () => {
+      const n = document.getElementById('app-nav'), t = document.getElementById('mdNavToggle');
+      if (!n || !t || !t.getClientRects().length) return '☰ or menu missing';
+      if (!document.body.classList.contains('md-nav-open')) { t.click(); await new Promise(r => setTimeout(r, 700)); }
+      const links = [...n.querySelectorAll('a[href], button')].filter(a => {
+        const b = a.getBoundingClientRect(); return b.width && b.height && b.top >= 48 && b.bottom <= innerHeight; }).slice(0, 6);
+      const hits = links.filter(a => { const b = a.getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return e && a.contains(e); }).length;
+      let reach = 0;
+      if (links.length) {
+        const b = links[0].getBoundingClientRect(), y = b.top + b.height / 2;
+        for (let x = 1; x < innerWidth; x += 4) { const e = document.elementFromPoint(x, y); if (e && n.contains(e)) reach = x; }
+      }
+      return { open: document.body.classList.contains('md-nav-open'), hits, links: links.length, reach, vw: innerWidth,
+        width: Math.round(n.getBoundingClientRect().width), inner: Math.round(n.firstElementChild.getBoundingClientRect().width) };
+    });
+    const works = d => d && d.open && d.links >= 4 && d.hits === d.links && d.reach >= 300 && d.reach <= d.vw * 0.9;
+    const close = () => ev(async () => { document.getElementById('mdNavBackdrop')?.click(); await new Promise(r => setTimeout(r, 700)); return !document.body.classList.contains('md-nav-open'); });
+    const phoneSize = async () => { await size(390, 844, true); await sleep(900); };
+    const wide = async () => { await size(1300, 900, false); await sleep(900); };
+
+    await size(390, 844, true);
+    await go(`/${J}/submissions`, 8000);
+    check('signed in as administrator', await loggedIn());
+    for (const synthetic of [false, true]) {
+      const tag = synthetic ? 'with the synthetic CSS' : 'without other CSS';
+      if (synthetic) await addSynthetic();
+      const before = await inline();
+      let d = await drawer();
+      check(`drawer ${tag}: items receive taps, tappable width ${d?.reach}/${d?.vw} px`, works(d), d);
+      if (synthetic) await shot('drawer-synthetic-open');
+      check(`drawer ${tag}: closes with no inline styles left`, (await close()) && (await inline()) === before, { before, after: await inline() });
+      // phone → desktop → phone without reloading, the second time with ☰ open
+      await wide();
+      const desk = await snap();
+      for (const leaveOpen of [false, true]) {
+        await phoneSize();
+        d = await drawer();
+        check(`drawer ${tag}: phone after desktop${leaveOpen ? ' (left open)' : ''}, items receive taps (${d?.reach} px)`, works(d), d);
+        if (!leaveOpen) await close();
+        await wide();
+        const now = await snap();
+        check(`drawer ${tag}: back on desktop${leaveOpen ? ' from an open menu' : ''}, menu identical and no inline styles`, now === desk, { desk, now });
+      }
+      await phoneSize();
+      d = await drawer();
+      check(`drawer ${tag}: phone again, items receive taps (${d?.reach} px)`, works(d), d);
+      check(`drawer ${tag}: phone again, closes with no inline styles left`, (await close()) && (await inline()) === before, { before, after: await inline() });
+    }
     check('no JavaScript errors from the plugin files', errors.length === 0, errors);
   }
 

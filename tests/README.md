@@ -1,3 +1,4 @@
+| `bash tests/run.sh drawer` | the ☰ drawer with a synthetic interfering stylesheet, and phone → desktop → phone without reloading | about 2 minutes |
 # Mobile Dashboard automated tests
 
 The suite repeats the plugin's checks automatically, so that a future change cannot silently break something that used to work.
@@ -12,7 +13,7 @@ It runs **only against a local OJS 3.5 copy in Docker**, never against a live si
 MD_LOCALE=/path/to/the/docker/copy bash tests/run.sh
 ```
 
-It needs Node.js 22 or later and Google Chrome, Chromium or Microsoft Edge. It takes about 14 minutes. At the end it prints `RESULT: all N tests passed` (exit code 0) or the list of failed tests.
+It needs Node.js 22 or later and Google Chrome, Chromium or Microsoft Edge. It takes about 16 minutes. At the end it prints `RESULT: all N tests passed` (exit code 0) or the list of failed tests.
 
 You can also run a single group, or several:
 
@@ -64,6 +65,10 @@ Each run includes about one minute to back up and prepare the local copy and the
   - The Invite to a role step bar fits inside the screen.
   - Statistics chart dates do not overlap.
   - There are no JavaScript errors from the plugin's files.
+- **Drawer:**
+  - A generic synthetic stylesheet, injected by the test and not tied to any plugin, gives `#app-nav` a low z-index and a column width and makes its direct container absolute and narrow.
+  - With and without it, the open ☰ menu must receive taps on several items (`elementFromPoint`) and be as wide as the drawer.
+  - The window goes phone → desktop → phone without reloading, once with the menu left open: no inline styles are left, the desktop menu is identical and the drawer works again.
 - **Desktop:**
   - 17 pages and windows are captured at 1300 px with and without the plugin. Each pair must match to the pixel.
   - Before each capture, the check waits for the page to finish loading from the network.

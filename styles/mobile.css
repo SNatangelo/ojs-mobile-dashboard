@@ -62,12 +62,17 @@
 
     /* ---------- Slide-out menu ---------- */
 
+    /* Other stylesheets may also style #app-nav (a column width, a low
+       z-index, an absolute container): the drawer's structural properties
+       are !important so it stays above its backdrop (55) and as wide as
+       its content. OJS sets no width on #app-nav, so auto is its own. */
     #app-nav {
         position: fixed !important;
         top: 3rem !important;
         bottom: 0;
         left: 0;
-        z-index: 60;
+        z-index: 60 !important;
+        width: auto !important;
         height: auto !important;
         max-width: 88vw;
         transform: translateX(-105%);
@@ -90,7 +95,8 @@
 
     /* The menu content scrolls inside it down to the last item */
     #app-nav > div {
-        width: 21rem;
+        position: static !important; /* as OJS renders it */
+        width: 21rem !important;
         max-width: 88vw;
         height: 100%;
         overflow-y: auto;

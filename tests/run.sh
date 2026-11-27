@@ -8,7 +8,7 @@
 #
 #   MD_LOCALE=/path/to/the/docker/copy bash tests/run.sh
 #   MD_LOCALE=... bash tests/run.sh phone        one group (or more):
-#                                                static phone desktop
+#                                                static phone drawer desktop
 #
 # It first backs up the local copy's database and plugin folder, then replaces
 # real names and email addresses with placeholder data and installs the plugin
@@ -29,7 +29,7 @@ DISABLE=${MD_DISABLE:-}
 FILES="MobileDashboardPlugin.php index.php version.xml styles locale"
 B=$MD_BASE
 OUT="$HERE/results"
-ALL="static phone desktop"
+ALL="static phone drawer desktop"
 WANT=" ${*:-$ALL} "
 
 if [ -z "$LOCALE" ] || [ ! -f "$LOCALE/docker-compose.yml" -a ! -f "$LOCALE/compose.yaml" -a ! -f "$LOCALE/docker-compose.yaml" ]; then
@@ -173,6 +173,10 @@ fi
 if want phone; then
   echo; echo "## Phone (390×844)"
   run_browser phone
+fi
+if want drawer; then
+  echo; echo "## ☰ drawer against other stylesheets, phone → desktop → phone without reloading"
+  run_browser drawer
 fi
 if want desktop; then
   echo; echo "## Desktop (1300 px): identical with and without the plugin"
