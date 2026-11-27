@@ -10,7 +10,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 - On phones (≤ 900 px) the ☰ drawer keeps working when another stylesheet also styles `#app-nav`, for example with a narrow column width, a low z-index or an absolutely positioned container. Before, the menu could end up under its own backdrop, so its items did not respond to taps (reported on the PKP forum with a sidebar plugin enabled).
 - Only the drawer's structural properties are `!important`: `z-index` and `width` of `#app-nav`, `position` and `width` of its direct container. The rules stay inside `@media (max-width: 900px)`; nothing changes above 900 px and no JavaScript was added.
-- New `drawer` test group: injects a generic synthetic stylesheet, checks with `elementFromPoint` that several menu items receive taps and that the drawer is full width, and resizes phone → desktop → phone without reloading, with and without that stylesheet, checking that no inline styles are left and that the desktop menu is unchanged.
+- New `drawer` test group with a generic synthetic "other plugin" (a class on `<html>` and a stylesheet). It checks that there is a single menu button and backdrop and no menu left on screen while ☰ is closed, and that several menu items receive taps (`elementFromPoint`) in a full-width drawer. It also resizes phone → desktop → phone without reloading: on the desktop the menu must be exactly as with Mobile Dashboard's files blocked, with no `md-*` classes and no inline styles.
+- README: new "Other plugins that change the side menu" section with the limits of this approach.
 
 ## 1.0.0.1 — Maintenance release
 

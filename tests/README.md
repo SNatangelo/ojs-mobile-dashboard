@@ -1,4 +1,4 @@
-| `bash tests/run.sh drawer` | the ☰ drawer with a synthetic interfering stylesheet, and phone → desktop → phone without reloading | about 2 minutes |
+| `bash tests/run.sh drawer` | the ☰ drawer with a synthetic interfering stylesheet, and phone → desktop → phone without reloading | about 3 minutes |
 # Mobile Dashboard automated tests
 
 The suite repeats the plugin's checks automatically, so that a future change cannot silently break something that used to work.
@@ -66,9 +66,10 @@ Each run includes about one minute to back up and prepare the local copy and the
   - Statistics chart dates do not overlap.
   - There are no JavaScript errors from the plugin's files.
 - **Drawer:**
-  - A generic synthetic stylesheet, injected by the test and not tied to any plugin, gives `#app-nav` a low z-index and a column width and makes its direct container absolute and narrow.
-  - With and without it, the open ☰ menu must receive taps on several items (`elementFromPoint`) and be as wide as the drawer.
-  - The window goes phone → desktop → phone without reloading, once with the menu left open: no inline styles are left, the desktop menu is identical and the drawer works again.
+  - A generic synthetic "other plugin", injected by the test and not tied to any real one, puts a class on `<html>` and a stylesheet that gives `#app-nav` a low z-index and a column width and makes its direct container absolute and narrow.
+  - Reference: the desktop menu is captured with Mobile Dashboard's files blocked, without and with the synthetic plugin.
+  - With and without the synthetic plugin, with ☰ closed there is one menu button, one backdrop and no part of the menu on screen; with ☰ open, several items receive taps (`elementFromPoint`) and the drawer is full width.
+  - The window goes phone → desktop → phone without reloading, once with the menu left open. On the desktop the menu (computed layout, boxes, attributes, classes and inline styles of the menu, its container, `<html>` and `<body>`) must be exactly as without Mobile Dashboard, with no `md-*` classes; back on the phone the drawer works again and closes with no inline styles left.
 - **Desktop:**
   - 17 pages and windows are captured at 1300 px with and without the plugin. Each pair must match to the pixel.
   - Before each capture, the check waits for the page to finish loading from the network.

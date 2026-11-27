@@ -744,26 +744,43 @@ try {
   }
 
   if (mode === 'drawer') {
-    // The ☰ drawer must keep working when another stylesheet changes #app-nav.
-    // A generic synthetic sheet (not tied to any plugin) gives the menu a low
-    // z-index and a narrow column width, and makes its direct container
-    // absolute and just as narrow, with selectors more specific than ours.
-    const SYNTHETIC = `html body #app-nav { width: 3.5rem; z-index: 9; }
-      html body #app-nav > * { position: absolute; top: 0; left: 0; width: 3.5rem; }`;
-    const addSynthetic = () => ev(css => { const s = document.createElement('style'); s.id = 'mdTestInterference'; s.textContent = css; document.head.appendChild(s); return 1; }, SYNTHETIC);
-    // Inline styles and state on the elements the drawer touches
+    // Below 900 px Mobile Dashboard takes over the side navigation, even when
+    // another stylesheet also styles #app-nav; above 900 px the other
+    // stylesheet must apply exactly as without Mobile Dashboard.
+    // A generic synthetic "other plugin" (not tied to any real one): a class
+    // on <html> plus a stylesheet that, more specific than ours, gives the
+    // menu a low z-index and a column width and makes its direct container
+    // absolute and just as narrow.
+    const OTHER = 'xOtherSidebar';
+    const SYNTHETIC = `html.${OTHER} body #app-nav { width: 3.5rem; z-index: 9; }
+      html.${OTHER} body #app-nav > * { position: absolute; top: 0; left: 0; width: 3.5rem; }`;
+    const addSynthetic = () => ev(([css, cls]) => {
+      const s = document.createElement('style'); s.id = 'xOtherSidebarCss'; s.textContent = css; document.head.appendChild(s);
+      document.documentElement.classList.add(cls); return 1;
+    }, [SYNTHETIC, OTHER]);
+    // Inline styles on the elements the drawer touches
     const inline = () => ev(() => {
       const n = document.getElementById('app-nav'), c = n && n.firstElementChild;
       return JSON.stringify([n?.getAttribute('style'), c?.getAttribute('style'), document.documentElement.getAttribute('style'), document.body.getAttribute('style')]);
     });
-    // Desktop snapshot: inline styles, inert, computed layout and boxes of the menu
+    // Desktop snapshot of the menu: computed layout, boxes, attributes (but
+    // data-md-ready, see the README limits), classes and inline styles of the
+    // menu, its container, <html> and <body>
     const snap = () => ev(() => {
       const n = document.getElementById('app-nav'), c = n && n.firstElementChild;
       if (!c) return 'menu missing';
-      const cs = e => { const s = getComputedStyle(e); return [s.position, s.width, s.zIndex, s.transform, s.visibility, s.left, s.top, s.overflowY].join(' '); };
+      const cs = e => { const s = getComputedStyle(e); return [s.position, s.width, s.zIndex, s.transform, s.visibility, s.left, s.top, s.overflowY, s.display].join(' '); };
       const box = e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map(Math.round).join(','); };
-      return JSON.stringify({ style: [n.getAttribute('style'), c.getAttribute('style'), document.documentElement.getAttribute('style'), document.body.getAttribute('style')],
-        inert: n.hasAttribute('inert'), open: document.body.classList.contains('md-nav-open'), nav: cs(n) + ' ' + box(n), child: cs(c) + ' ' + box(c) });
+      const attrs = e => [...e.attributes].filter(a => a.name !== 'data-md-ready').map(a => a.name + '=' + a.value).sort().join(' ');
+      return JSON.stringify({ nav: [cs(n), box(n), attrs(n)], child: [cs(c), box(c), attrs(c)],
+        html: [document.documentElement.className, document.documentElement.getAttribute('style')],
+        body: [document.body.className, document.body.getAttribute('style')] });
+    });
+    // Our own classes left on the page (md-*), outside the content
+    const ours = () => ev(() => {
+      const n = document.getElementById('app-nav');
+      return [document.documentElement, document.body, n, n?.firstElementChild].filter(Boolean)
+        .flatMap(e => [...e.classList].filter(c => /^md-/.test(c)));
     });
     // Opens ☰ and checks that the items really receive taps (elementFromPoint
     // on several of them) and how wide the tappable drawer is
@@ -783,34 +800,66 @@ try {
         width: Math.round(n.getBoundingClientRect().width), inner: Math.round(n.firstElementChild.getBoundingClientRect().width) };
     });
     const works = d => d && d.open && d.links >= 4 && d.hits === d.links && d.reach >= 300 && d.reach <= d.vw * 0.9;
+    // With ☰ closed: a single menu button and a single backdrop, and no part
+    // of the menu left on screen (no second column or drawer beside the content)
+    const single = () => ev(() => {
+      const n = document.getElementById('app-nav');
+      const shown = e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
+      const toggles = [...document.querySelectorAll('[aria-controls="app-nav"]')].filter(shown).map(e => e.id || e.tagName);
+      let menuHits = 0;
+      for (let y = 60; y < innerHeight; y += 40) for (const x of [5, 30, 120]) { const e = document.elementFromPoint(x, y); if (e && n.contains(e)) menuHits++; }
+      const r = n.getBoundingClientRect();
+      return { toggles, buttons: document.querySelectorAll('#mdNavToggle').length, backdrops: document.querySelectorAll('#mdNavBackdrop').length,
+        menuHits, offscreen: r.right <= 0 || getComputedStyle(n).visibility === 'hidden', open: document.body.classList.contains('md-nav-open') };
+    });
+    const isSingle = s => s && !s.open && s.toggles.length === 1 && s.toggles[0] === 'mdNavToggle' && s.buttons === 1 && s.backdrops === 1 && s.menuHits === 0 && s.offscreen;
     const close = () => ev(async () => { document.getElementById('mdNavBackdrop')?.click(); await new Promise(r => setTimeout(r, 700)); return !document.body.classList.contains('md-nav-open'); });
     const phoneSize = async () => { await size(390, 844, true); await sleep(900); };
     const wide = async () => { await size(1300, 900, false); await sleep(900); };
+    const page = `/${J}/submissions`;
+
+    // Reference: the desktop menu without Mobile Dashboard (its files
+    // blocked), without and with the synthetic other plugin
+    await send('Network.setBlockedURLs', { urls: BLOCK });
+    await size(1300, 900, false);
+    await go(page, 8000);
+    const plain = await snap();
+    await addSynthetic(); await sleep(300);
+    const other = await snap();
+    await send('Network.setBlockedURLs', { urls: [] });
+    check('reference: the synthetic stylesheet changes the desktop menu', plain !== other && !/menu missing/.test(plain), { plain, other });
 
     await size(390, 844, true);
-    await go(`/${J}/submissions`, 8000);
+    await go(page, 8000);
     check('signed in as administrator', await loggedIn());
     for (const synthetic of [false, true]) {
       const tag = synthetic ? 'with the synthetic CSS' : 'without other CSS';
+      const ref = synthetic ? other : plain;
       if (synthetic) await addSynthetic();
       const before = await inline();
+      let s = await single();
+      check(`drawer ${tag}: closed, one menu button and no menu left on screen`, isSingle(s), s);
       let d = await drawer();
       check(`drawer ${tag}: items receive taps, tappable width ${d?.reach}/${d?.vw} px`, works(d), d);
       if (synthetic) await shot('drawer-synthetic-open');
       check(`drawer ${tag}: closes with no inline styles left`, (await close()) && (await inline()) === before, { before, after: await inline() });
       // phone → desktop → phone without reloading, the second time with ☰ open
-      await wide();
-      const desk = await snap();
       for (const leaveOpen of [false, true]) {
+        await wide();
+        const now = await snap(), md = await ours();
+        check(`drawer ${tag}: on desktop${leaveOpen ? ' from an open menu' : ''}, menu exactly as without Mobile Dashboard, no md-* classes or inline styles`,
+          now === ref && md.length === 0, { ref, now, md });
         await phoneSize();
         d = await drawer();
         check(`drawer ${tag}: phone after desktop${leaveOpen ? ' (left open)' : ''}, items receive taps (${d?.reach} px)`, works(d), d);
         if (!leaveOpen) await close();
-        await wide();
-        const now = await snap();
-        check(`drawer ${tag}: back on desktop${leaveOpen ? ' from an open menu' : ''}, menu identical and no inline styles`, now === desk, { desk, now });
       }
+      await wide();
+      const last = await snap();
+      check(`drawer ${tag}: on desktop again, menu exactly as without Mobile Dashboard`, last === ref && (await ours()).length === 0, { ref, last });
       await phoneSize();
+      s = await single();
+      check(`drawer ${tag}: phone again, ☰ closed, one menu button and no menu left on screen`, isSingle(s), s);
       d = await drawer();
       check(`drawer ${tag}: phone again, items receive taps (${d?.reach} px)`, works(d), d);
       check(`drawer ${tag}: phone again, closes with no inline styles left`, (await close()) && (await inline()) === before, { before, after: await inline() });

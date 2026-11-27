@@ -125,7 +125,7 @@ The plugin has no additional settings, third-party accounts, subscriptions or ru
 
 ## Testing and known limitations
 
-The [automated browser suite](https://github.com/SNatangelo/ojs-mobile-dashboard/blob/main/tests/README.md) runs against a local OJS 3.5.0-6 Docker copy with placeholder data. It defines **158 checks**: **11 on files and the installed plugin**, **130 on a simulated phone** (390 × 844, with simulated touches for the tab swipes) and **17 on a computer**, where 17 pages and dialogs are captured at 1300 px with and without the plugin and must be identical pixel by pixel. These are suite counts, not an execution report.
+The [automated browser suite](https://github.com/SNatangelo/ojs-mobile-dashboard/blob/main/tests/README.md) runs against a local OJS 3.5.0-6 Docker copy with placeholder data. It defines **183 checks**: **11 on files and the installed plugin**, **130 on a simulated phone** (390 × 844, with simulated touches for the tab swipes), **25 on the phone menu drawer** (with a synthetic interfering stylesheet and phone → desktop → phone resizing without reloading) and **17 on a computer**, where 17 pages and dialogs are captured at 1300 px with and without the plugin and must be identical pixel by pixel. These are suite counts, not an execution report.
 
 The CI workflow checks PHP and JavaScript syntax, Bash syntax, that `mobile.css` changes nothing above 900 px, the version format, that the English and Italian strings match, and file headers. It does not start Docker or OJS; the browser suite is **not run by CI**.
 
@@ -135,6 +135,17 @@ The CI workflow checks PHP and JavaScript syntax, Bash syntax, that `mobile.css`
 - Installation through the OJS plugin management interface is outside the automated suite.
 
 Test scripts are not part of the installable release package.
+
+### Other plugins that change the side menu
+
+Below 900 px Mobile Dashboard takes over the side menu (`#app-nav`) as a slide-out drawer. Above 900 px it adds no rules, so other plugins' menu customisations apply exactly as without it, also after resizing without a reload. The approach is generic. It has no rules for any specific plugin and it does not guarantee compatibility with every plugin that changes the menu:
+
+- Only the drawer's structure is protected: position, z-index and width of `#app-nav`, and position and width of its direct `div` container (OJS's menu). Other stylesheets can still change everything inside the menu: which items, names or submenus are shown, colours and spacing.
+- Elements that other plugins add to the menu or the header, such as their own buttons, are left visible and working. Mobile Dashboard does not hide them, so they can appear inside the drawer next to its own ☰ button.
+- A plugin that keeps the menu in a compact state (for example icons only) may show that state inside the drawer. The items still receive taps, but the full names may only appear after that plugin's own interaction.
+- Other direct children of `#app-nav` that another stylesheet positions absolutely are not repositioned.
+- A plugin that changes the menu with JavaScript at the same moments (opening, closing, resizing) is not coordinated with; there is no observer or polling to correct it.
+- `#app-nav` keeps a `data-md-ready` attribute after the first phone view, used to avoid adding the same listener twice. It has no styles attached.
 
 ## Support and contributions
 
