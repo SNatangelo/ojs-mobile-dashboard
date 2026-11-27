@@ -8,8 +8,8 @@
 <version>
 	<application>mobileDashboard</application>
 	<type>plugins.generic</type>
-	<release>1.0.0.0</release>
-	<date>2026-11-23</date>
+	<release>1.0.0.1</release>
+	<date>2026-11-27</date>
 	<lazy-load>1</lazy-load>
 	<sitewide>1</sitewide>
 	<class>MobileDashboardPlugin</class>
