@@ -6,6 +6,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 # Changelog
 
+## 1.0.0.1 — Maintenance release
+
+- Align the public release tag and archive name with the four-part PKP plugin version.
+- Document privacy, local processing and private security reporting.
+- Add allowlisted deterministic packaging, archive verification and MD5/SHA-256 generation in CI.
+- No changes to runtime PHP, CSS, JavaScript or translations.
+
 ## 1.0.0 — 2026-11-23
 
 First release.
